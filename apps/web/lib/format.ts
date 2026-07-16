@@ -5,11 +5,15 @@ export function formatDate(iso: string): string {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
 export function formatMonthYear(iso: string): string {
-  return new Date(`${iso}-01`).toLocaleDateString("en-US", MONTH_YEAR);
+  return new Date(`${iso}-01`).toLocaleDateString("en-US", {
+    ...MONTH_YEAR,
+    timeZone: "UTC",
+  });
 }
 
 export function formatRange(start: string, end: string | null): string {
