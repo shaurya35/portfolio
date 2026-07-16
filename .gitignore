@@ -40,3 +40,4 @@ yarn-error.log*
 
 # Private planning docs
 docs/
+apps/rust-be/assignments
