@@ -9,7 +9,7 @@ export function Blog() {
       <SectionHeading>Blog</SectionHeading>
 
       <ul className="mt-4 flex flex-col gap-6">
-        {blogPosts.map((post) => (
+        {blogPosts.slice(0, 3).map((post) => (
           <li key={post.slug}>
             <a
               href={post.href}
