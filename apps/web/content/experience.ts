@@ -9,7 +9,7 @@ export const experience: Experience[] = [
       "Built a voice-AI agent that screens candidates in English, Hindi & Hinglish.",
     start: "2025-12",
     end: null,
-    location: "Bangalore, India",
+    location: "Bangalore, IN",
     mode: "Remote",
   },
   {
@@ -20,7 +20,7 @@ export const experience: Experience[] = [
       "Lead Engineer on two Philips healthcare platforms, shipping with 93%+ test coverage.",
     start: "2025-12",
     end: "2026-06",
-    location: "Bangalore, India",
+    location: "Bangalore, IN",
     mode: "Hybrid",
   },
   {
@@ -42,7 +42,7 @@ export const experience: Experience[] = [
       "First engineer on the team: set up the monorepo and deployment pipeline.",
     start: "2025-02",
     end: "2025-06",
-    location: "Bangalore, India",
+    location: "Bangalore, IN",
     mode: "Remote",
   },
 ];
