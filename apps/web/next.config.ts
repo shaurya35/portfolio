@@ -20,11 +20,13 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       { source: "/twitter", destination: socialHref("X"), permanent: false },
+      { source: "/x", destination: socialHref("X"), permanent: false },
       {
         source: "/medium",
         destination: socialHref("Medium"),
         permanent: false,
       },
+      { source: "/mail", destination: socialHref("Email"), permanent: false },
       { source: "/cal", destination: site.calHref, permanent: false },
     ];
   },
