@@ -5,4 +5,5 @@ export type Project = {
   tech: string[];
   liveHref: string | null;
   githubHref: string | null;
+  image?: string;
 };
