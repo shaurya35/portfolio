@@ -1,4 +1,7 @@
-const MONTH_YEAR: Intl.DateTimeFormatOptions = { month: "long", year: "numeric" };
+const MONTH_YEAR: Intl.DateTimeFormatOptions = {
+  month: "short",
+  year: "numeric",
+};
 
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
