@@ -29,7 +29,7 @@ export function Hero() {
         </div>
       </div>
 
-      <p className="mt-4 max-w-xl text-sm text-muted-foreground">{site.tagline}</p>
+      <p className="mt-4 max-w-xl text-sm text-muted-foreground">{site.credibility}</p>
 
       <div className="mt-4 flex flex-wrap gap-0.5">
         {socials.map((social) => {
