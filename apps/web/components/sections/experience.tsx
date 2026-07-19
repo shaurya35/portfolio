@@ -34,11 +34,14 @@ export function Experience() {
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <p className="text-sm text-muted-foreground">{job.role}</p>
               <p className="shrink-0 text-sm text-muted-foreground">
-                {job.location} ({job.mode})
+                <span className="sm:hidden">{job.location}</span>
+                <span className="hidden sm:inline">
+                  {job.location} ({job.mode})
+                </span>
               </p>
             </div>
-            <div className="mt-1 flex items-start gap-2 text-sm text-muted-foreground">
-              <span className="flex h-5 w-4 shrink-0 items-center justify-center">
+            <div className="mt-1 hidden items-start gap-2 text-sm text-muted-foreground sm:flex">
+              <span className="hidden h-5 w-4 shrink-0 items-center justify-center sm:flex">
                 <span className="size-1 rounded-full bg-muted-foreground" />
               </span>
               <p>{job.highlight}</p>
