@@ -9,11 +9,8 @@ export function Experience() {
 
       <ul className="mt-4 flex flex-col gap-4">
         {experience.map((job) => (
-          <li
-            key={`${job.company}-${job.start}`}
-            className="flex flex-col justify-between gap-1 sm:flex-row sm:items-start sm:gap-3"
-          >
-            <div>
+          <li key={`${job.company}-${job.start}`} className="flex flex-col">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <a
                   href={job.companyHref}
@@ -30,13 +27,21 @@ export function Experience() {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">{job.role}</p>
+              <p className="shrink-0 text-sm text-muted-foreground">
+                {formatRange(job.start, job.end)}
+              </p>
             </div>
-            <div className="text-right text-sm text-muted-foreground sm:shrink-0">
-              <p>{formatRange(job.start, job.end)}</p>
-              <p>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+              <p className="text-sm text-muted-foreground">{job.role}</p>
+              <p className="shrink-0 text-sm text-muted-foreground">
                 {job.location} ({job.mode})
               </p>
+            </div>
+            <div className="mt-1 flex items-start gap-2 text-sm text-muted-foreground">
+              <span className="flex h-5 w-4 shrink-0 items-center justify-center">
+                <span className="size-1 rounded-full bg-muted-foreground" />
+              </span>
+              <p>{job.highlight}</p>
             </div>
           </li>
         ))}
