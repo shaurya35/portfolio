@@ -33,15 +33,15 @@ export function WritingList({ writings }: { writings: Writing[] }) {
                 href={post.href}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+                className="block"
               >
-                <div className="min-w-0 flex-1 space-y-1">
-                  <h3 className="text-lg leading-tight font-semibold transition-colors group-hover:text-accent">
-                    {post.title}
-                  </h3>
-                  <p className="line-clamp-2 text-sm text-muted-foreground">
-                    {post.description}
-                  </p>
+                <h3 className="text-lg leading-tight font-semibold transition-colors group-hover:text-accent">
+                  {post.title}
+                </h3>
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                  {post.description}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <SourceIcon className="size-3" />
@@ -52,11 +52,11 @@ export function WritingList({ writings }: { writings: Writing[] }) {
                       {formatDate(post.date)}
                     </span>
                   </div>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-accent">
+                    Read more
+                    <ArrowRightIcon className="size-4" />
+                  </span>
                 </div>
-                <span className="inline-flex shrink-0 items-center gap-1.5 self-start text-sm text-muted-foreground transition-colors group-hover:text-accent">
-                  Read more
-                  <ArrowRightIcon className="size-4" />
-                </span>
               </a>
             </article>
           );

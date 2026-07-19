@@ -2,6 +2,7 @@ import Link from "next/link";
 import { writings } from "@/content/writing";
 import { formatDate } from "@/lib/format";
 import { SectionHeading } from "@/components/section-heading";
+import { CalendarIcon, ArrowRightIcon } from "@/components/icons";
 
 export function Writing() {
   return (
@@ -15,22 +16,24 @@ export function Writing() {
               href={post.href}
               target="_blank"
               rel="noreferrer"
-              className="group flex items-center justify-between gap-4"
+              className="group block"
             >
-              <div className="min-w-0">
-                <h3 className="font-medium transition-colors group-hover:text-accent">
-                  {post.title}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {post.description}
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
+              <h3 className="font-medium transition-colors group-hover:text-accent">
+                {post.title}
+              </h3>
+              <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                {post.description}
+              </p>
+              <div className="mt-2 flex items-center justify-between gap-4">
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <CalendarIcon className="size-3.5" />
                   {formatDate(post.date)}
-                </p>
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground transition-colors group-hover:text-accent">
+                  Read more
+                  <ArrowRightIcon className="size-4" />
+                </span>
               </div>
-              <span className="shrink-0 text-sm text-muted-foreground transition-colors group-hover:text-accent">
-                →
-              </span>
             </a>
           </li>
         ))}
