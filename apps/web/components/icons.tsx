@@ -115,5 +115,6 @@ export const socialIcons: Record<
   x: XIcon,
   linkedin: LinkedInIcon,
   github: GitHubIcon,
+  medium: MediumIcon,
   mail: MailIcon,
 };

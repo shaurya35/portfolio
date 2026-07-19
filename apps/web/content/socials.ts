@@ -8,6 +8,7 @@ export const socials: Social[] = [
     icon: "linkedin",
   },
   { name: "GitHub", href: "https://github.com/shaurya35", icon: "github" },
+  { name: "Medium", href: "https://medium.com/@shauryajha35", icon: "medium" },
   {
     name: "Email",
     href: "https://mail.google.com/mail/?view=cm&fs=1&to=shauryajha35@gmail.com",

@@ -1,4 +1,4 @@
-export type SocialIconName = "x" | "linkedin" | "github" | "mail";
+export type SocialIconName = "x" | "linkedin" | "github" | "medium" | "mail";
 
 export type Social = {
   name: string;
@@ -9,6 +9,7 @@ export type Social = {
 export type Site = {
   name: string;
   role: string;
-  tagline: string;
+  credibility: string;
   email: string;
+  calHref: string;
 };
