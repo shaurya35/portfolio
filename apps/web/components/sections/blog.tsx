@@ -15,9 +15,9 @@ export function Blog() {
               href={post.href}
               target="_blank"
               rel="noreferrer"
-              className="group flex items-start justify-between gap-4"
+              className="group flex items-center justify-between gap-4"
             >
-              <div>
+              <div className="min-w-0">
                 <h3 className="font-medium transition-colors group-hover:text-accent">
                   {post.title}
                 </h3>
@@ -26,7 +26,7 @@ export function Blog() {
                   {formatDate(post.date)}
                 </p>
               </div>
-              <span className="mt-1 shrink-0 text-sm text-muted-foreground transition-colors group-hover:text-accent">
+              <span className="shrink-0 text-sm text-muted-foreground transition-colors group-hover:text-accent">
                 →
               </span>
             </a>
