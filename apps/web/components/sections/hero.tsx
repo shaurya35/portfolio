@@ -20,8 +20,9 @@ export function Hero() {
           <h1 className="text-lg font-bold whitespace-nowrap sm:text-2xl">
             {site.name}
           </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-base text-muted-foreground">
-            <span>
+          <div className="mt-1 flex items-center gap-1 text-base text-muted-foreground">
+            <span className="sm:hidden">Engineer · Founder · Email</span>
+            <span className="hidden sm:inline">
               {site.role} · {site.email}
             </span>
             <CopyEmail email={site.email} />
@@ -29,7 +30,9 @@ export function Hero() {
         </div>
       </div>
 
-      <p className="mt-4 max-w-xl text-sm text-muted-foreground">{site.credibility}</p>
+      <p className="mt-4 max-w-xl text-sm text-muted-foreground">
+        {site.credibility}
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-0.5">
         {socials.map((social) => {
