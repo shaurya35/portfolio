@@ -4,7 +4,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 const links = [
   { label: "Home", href: "/" },
   { label: "Projects", href: "/projects" },
-  { label: "Blog", href: "/blog" },
+  { label: "Writing", href: "/writing" },
 ];
 
 export function Nav() {

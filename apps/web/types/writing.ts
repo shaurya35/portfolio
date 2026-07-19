@@ -1,11 +1,11 @@
-export type BlogSource = "x" | "medium";
+export type WritingSource = "x" | "medium";
 
-export type BlogPost = {
+export type Writing = {
   slug: string;
   title: string;
   description: string;
   date: string;
   category: string;
-  source: BlogSource;
+  source: WritingSource;
   href: string;
 };

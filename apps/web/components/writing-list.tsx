@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { BlogPost } from "@/types/blog";
+import type { Writing } from "@/types/writing";
 import { formatDate } from "@/lib/format";
-import { CalendarIcon, ArrowRightIcon, XIcon, MediumIcon } from "@/components/icons";
+import {
+  CalendarIcon,
+  ArrowRightIcon,
+  XIcon,
+  MediumIcon,
+} from "@/components/icons";
 
 const PAGE_SIZE = 10;
 
@@ -12,10 +17,10 @@ const sourceIcons = {
   medium: MediumIcon,
 };
 
-export function BlogList({ posts }: { posts: BlogPost[] }) {
+export function WritingList({ writings }: { writings: Writing[] }) {
   const [visible, setVisible] = useState(PAGE_SIZE);
-  const shown = posts.slice(0, visible);
-  const remaining = posts.length - shown.length;
+  const shown = writings.slice(0, visible);
+  const remaining = writings.length - shown.length;
 
   return (
     <div>
