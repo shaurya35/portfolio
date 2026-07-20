@@ -17,10 +17,14 @@ export function ProjectList({ projects }: { projects: Project[] }) {
         counts.set(t, (counts.get(t) ?? 0) + 1);
       }
     }
-    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    return Array.from(counts.entries()).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
   }, [projects]);
 
-  const filtered = tech ? projects.filter((project) => project.tech.includes(tech)) : projects;
+  const filtered = tech
+    ? projects.filter((project) => project.tech.includes(tech))
+    : projects;
   const shown = filtered.slice(0, visible);
   const remaining = filtered.length - shown.length;
 
@@ -31,8 +35,13 @@ export function ProjectList({ projects }: { projects: Project[] }) {
 
   return (
     <div>
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        <FilterPill label="All" count={projects.length} active={tech === null} onClick={() => selectTech(null)} />
+      <div className="scrollbar-none flex gap-1.5 overflow-x-auto pb-1">
+        <FilterPill
+          label="All"
+          count={projects.length}
+          active={tech === null}
+          onClick={() => selectTech(null)}
+        />
         {techs.map(([t, count]) => (
           <FilterPill
             key={t}

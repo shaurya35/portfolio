@@ -5,7 +5,8 @@ const STORAGE_KEY = "theme";
 export function ThemeToggle() {
   const toggle = () => {
     const root = document.documentElement;
-    const current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const current =
+      root.getAttribute("data-theme") === "dark" ? "dark" : "light";
     const next = current === "dark" ? "light" : "dark";
     root.setAttribute("data-theme", next);
     window.localStorage.setItem(STORAGE_KEY, next);
@@ -16,7 +17,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label="Toggle theme"
-      className="flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground"
+      className="flex size-8 cursor-pointer items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
