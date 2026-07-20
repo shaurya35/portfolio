@@ -40,12 +40,6 @@ export function Experience() {
                 </span>
               </p>
             </div>
-            <div className="mt-1 hidden items-start gap-2 text-sm text-muted-foreground sm:flex">
-              <span className="hidden h-5 w-4 shrink-0 items-center justify-center sm:flex">
-                <span className="size-1 rounded-full bg-muted-foreground" />
-              </span>
-              <p>{job.highlight}</p>
-            </div>
           </li>
         ))}
       </ul>
