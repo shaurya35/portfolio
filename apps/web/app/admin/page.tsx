@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiRequestError, login } from "@/app/admin/_lib/api";
+import { EyeIcon, EyeSlashIcon } from "@/components/icons";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,20 +43,35 @@ export default function AdminLoginPage() {
           <label htmlFor="password" className="text-sm text-muted-foreground">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            autoFocus
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-            required
-          />
+          <div className="flex items-center rounded-md border border-border bg-background focus-within:border-accent">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoFocus
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="w-full px-3 py-2 text-sm outline-none"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="cursor-pointer px-3 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="size-4" />
+              ) : (
+                <EyeIcon className="size-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         {error ? (
-          <p role="alert" className="text-sm text-red-500">
+          <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
         ) : null}

@@ -62,7 +62,7 @@ export function EditPostView({ id }: { id: string }) {
   }
 
   if (error) {
-    return <p className="py-8 text-sm text-red-500">{error}</p>;
+    return <p className="py-8 text-sm text-destructive">{error}</p>;
   }
 
   if (post === undefined) {

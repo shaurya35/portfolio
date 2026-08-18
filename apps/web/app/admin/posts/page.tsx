@@ -80,7 +80,7 @@ export default function AdminPostsPage() {
         </div>
       </div>
 
-      {error ? <p className="text-sm text-red-500">{error}</p> : null}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {posts === null && !error ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
@@ -93,28 +93,27 @@ export default function AdminPostsPage() {
       {posts !== null && posts.length > 0 ? (
         <ul className="flex flex-col divide-y divide-border border-y border-border">
           {posts.map((post) => (
-            <li key={post.id} className="flex items-center justify-between gap-4 py-3">
+            <li key={post.id} className="group relative flex items-center justify-between gap-4 py-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="truncate font-medium">{post.title}</span>
+                  <Link
+                    href={`/admin/posts/${post.id}`}
+                    className="truncate font-medium transition-colors after:absolute after:inset-0 group-hover:text-accent"
+                  >
+                    {post.title}
+                  </Link>
                   <StatusBadge status={post.status} />
                 </div>
                 <p className="mt-0.5 truncate text-sm text-muted-foreground">
                   {post.slug} · {post.category} · {post.source}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <Link
-                  href={`/admin/posts/${post.id}`}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Edit
-                </Link>
+              <div className="relative z-10 flex shrink-0 items-center gap-3">
                 <button
                   type="button"
                   onClick={() => handleDelete(post)}
                   disabled={deletingId === post.id}
-                  className="cursor-pointer text-sm text-red-500 transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer text-sm text-destructive transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {deletingId === post.id ? "Deleting…" : "Delete"}
                 </button>
