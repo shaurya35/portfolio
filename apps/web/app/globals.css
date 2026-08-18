@@ -10,6 +10,7 @@
   --muted-foreground: #737373;
   --border: #e5e5e5;
   --accent: #2563eb;
+  --destructive: #dc2626;
 }
 
 [data-theme="dark"] {
@@ -19,6 +20,7 @@
   --muted-foreground: #a1a1a1;
   --border: #ffffff1a;
   --accent: #60a5fa;
+  --destructive: #f87171;
 }
 
 @theme inline {
@@ -28,6 +30,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
   --font-sans: var(--font-hanken-grotesk);
 }
 

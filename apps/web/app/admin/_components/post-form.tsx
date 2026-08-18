@@ -94,7 +94,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
           </p>
         ) : null}
         {slugError ? (
-          <p role="alert" className="text-sm text-red-500">
+          <p role="alert" className="text-sm text-destructive">
             {slugError}
           </p>
         ) : null}
@@ -149,7 +149,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
               onClick={() => setSource(option.value)}
               className={`cursor-pointer rounded-md border px-3 py-1.5 text-sm transition-colors ${
                 source === option.value
-                  ? "border-accent text-accent"
+                  ? "border-foreground bg-foreground text-background"
                   : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -198,7 +198,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
             onClick={() => setStatus("draft")}
             className={`cursor-pointer rounded-md border px-3 py-1.5 text-sm transition-colors ${
               status === "draft"
-                ? "border-accent text-accent"
+                ? "border-foreground bg-foreground text-background"
                 : "border-border text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -209,7 +209,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
             onClick={() => setStatus("published")}
             className={`cursor-pointer rounded-md border px-3 py-1.5 text-sm transition-colors ${
               status === "published"
-                ? "border-accent text-accent"
+                ? "border-foreground bg-foreground text-background"
                 : "border-border text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -219,7 +219,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
       </div>
 
       {formError ? (
-        <p role="alert" className="text-sm text-red-500">
+        <p role="alert" className="text-sm text-destructive">
           {formError}
         </p>
       ) : null}
