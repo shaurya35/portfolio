@@ -36,6 +36,7 @@ pub(super) async fn login(
 
 pub(super) async fn logout(
     State(state): State<AppState>,
+    _admin: Admin,
     jar: SignedCookieJar,
 ) -> (SignedCookieJar, StatusCode) {
     *state.session_epoch.write().await += 1;
