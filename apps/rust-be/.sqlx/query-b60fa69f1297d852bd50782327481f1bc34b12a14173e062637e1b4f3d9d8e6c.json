@@ -1,0 +1,158 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, slug, title, description, category, source, url, markdown, status,\n               published_at, created_at, updated_at\n        FROM posts\n        WHERE status = 'published'\n        ORDER BY published_at DESC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "slug",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "slug"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "title"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "description"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "source",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "source"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "url",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "url"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "markdown",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "markdown"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "published_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "published_at"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "created_at"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "updated_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "b60fa69f1297d852bd50782327481f1bc34b12a14173e062637e1b4f3d9d8e6c"
+}

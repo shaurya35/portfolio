@@ -11,7 +11,9 @@ mod state;
 
 use std::sync::Arc;
 
+use axum::http::{HeaderValue, Method, header};
 use tokio::sync::RwLock;
+use tower_http::cors::CorsLayer;
 
 use crate::config::Config;
 use crate::state::AppState;
@@ -51,6 +53,11 @@ async fn main() {
         }
     });
 
+    let allowed_origin = HeaderValue::from_str(&config.allowed_origin).unwrap_or_else(|err| {
+        eprintln!("invalid ALLOWED_ORIGIN: {err}");
+        std::process::exit(1);
+    });
+
     let state = AppState {
         pool,
         config,
@@ -58,7 +65,13 @@ async fn main() {
         session_epoch: Arc::new(RwLock::new(0)),
     };
 
-    let app = routes::router().with_state(state);
+    let cors = CorsLayer::new()
+        .allow_origin(allowed_origin)
+        .allow_credentials(true)
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_headers([header::CONTENT_TYPE]);
+
+    let app = routes::router().with_state(state).layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
         .await

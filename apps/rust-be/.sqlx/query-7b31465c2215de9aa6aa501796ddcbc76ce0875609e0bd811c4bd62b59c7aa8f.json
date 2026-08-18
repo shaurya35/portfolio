@@ -1,0 +1,167 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE posts SET\n            title = $1,\n            description = $2,\n            category = $3,\n            source = $4,\n            url = $5,\n            markdown = $6,\n            status = $7,\n            published_at = CASE\n                WHEN $7 = 'published' AND published_at IS NULL THEN now()\n                ELSE published_at\n            END,\n            updated_at = now()\n        WHERE id = $8\n        RETURNING id, slug, title, description, category, source, url, markdown, status,\n                  published_at, created_at, updated_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "slug",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "slug"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "title"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "description"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "source",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "source"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "url",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "url"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "markdown",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "markdown"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "published_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "published_at"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "created_at"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "updated_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "7b31465c2215de9aa6aa501796ddcbc76ce0875609e0bd811c4bd62b59c7aa8f"
+}

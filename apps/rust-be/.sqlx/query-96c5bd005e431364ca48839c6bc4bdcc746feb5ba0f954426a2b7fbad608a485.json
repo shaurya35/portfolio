@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT country as \"country!\", count(*) as \"count!\"\n            FROM events\n            WHERE kind = 'pageview' AND country IS NOT NULL AND created_at >= now() - make_interval(days => $1)\n            GROUP BY country\n            ORDER BY count(*) DESC\n            LIMIT 10\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "country!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "events",
+            "name": "country"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      true,
+      null
+    ]
+  },
+  "hash": "96c5bd005e431364ca48839c6bc4bdcc746feb5ba0f954426a2b7fbad608a485"
+}

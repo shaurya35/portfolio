@@ -18,6 +18,7 @@ pub struct Config {
     pub cookie_key: String,
     pub revalidate_url: String,
     pub revalidate_secret: String,
+    pub allowed_origin: String,
 }
 
 impl Config {
@@ -28,6 +29,7 @@ impl Config {
             cookie_key: required("COOKIE_KEY")?,
             revalidate_url: required("REVALIDATE_URL")?,
             revalidate_secret: required("REVALIDATE_SECRET")?,
+            allowed_origin: required("ALLOWED_ORIGIN")?,
         })
     }
 }
