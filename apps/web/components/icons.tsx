@@ -82,18 +82,31 @@ export function ArrowLeftIcon(props: IconProps) {
 
 export function ShareIcon(props: IconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      {...props}
-    >
-      <path
+    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <circle cx="64" cy="128" r="32" opacity={0.2} />
+      <circle cx="192" cy="64" r="32" opacity={0.2} />
+      <circle cx="192" cy="192" r="32" opacity={0.2} />
+      <line
+        x1="91"
+        y1="112"
+        x2="165"
+        y2="78"
+        stroke="currentColor"
+        strokeWidth="16"
         strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8.684 13.342a4 4 0 1 0 0-2.684m0 2.684 6.632 3.316m-6.632-6 6.632-3.316m0 0a4 4 0 1 0 3.868-4.984 4 4 0 0 0-3.868 4.984Zm0 10.632a4 4 0 1 0 3.868 4.984 4 4 0 0 0-3.868-4.984Z"
       />
+      <line
+        x1="91"
+        y1="144"
+        x2="165"
+        y2="178"
+        stroke="currentColor"
+        strokeWidth="16"
+        strokeLinecap="round"
+      />
+      <circle cx="64" cy="128" r="28" />
+      <circle cx="192" cy="64" r="28" />
+      <circle cx="192" cy="192" r="28" />
     </svg>
   );
 }
@@ -111,11 +124,11 @@ export function MediumIcon(props: IconProps) {
 export function NativeIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path
-        d="M200,88V216a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h96Z"
-        opacity={0.2}
-      />
-      <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H64A16,16,0,0,0,48,40V216a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM192,216H64V40h80V88a8,8,0,0,0,8,8h40V216Zm-88-56a8,8,0,0,1-8,8H88v8a8,8,0,0,1-16,0v-8H64a8,8,0,0,1,0-16h8v-8a8,8,0,0,1,16,0v8h8A8,8,0,0,1,104,160Zm64,32a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h32A8,8,0,0,1,168,192Zm0-32a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h32A8,8,0,0,1,168,160Z" />
+      <g transform="rotate(45 128 128)">
+        <rect x="28" y="118" width="24" height="20" rx="4" opacity={0.2} />
+        <rect x="52" y="118" width="112" height="20" rx="2" />
+        <path d="M164,116 L164,140 L198,128 Z" />
+      </g>
     </svg>
   );
 }

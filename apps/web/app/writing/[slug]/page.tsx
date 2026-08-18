@@ -5,7 +5,6 @@ import { getPost, getPosts } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { CalendarIcon, ArrowLeftIcon } from "@/components/icons";
 import { ShareButton } from "@/components/share-button";
-import { ReadingProgress } from "@/components/reading-progress";
 import type { Writing } from "@/types/writing";
 
 export async function generateStaticParams() {
@@ -53,8 +52,6 @@ export default async function WritingPostPage({
 
   return (
     <article className="py-8">
-      <ReadingProgress />
-
       <Link
         href="/writing"
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
@@ -64,16 +61,16 @@ export default async function WritingPostPage({
       </Link>
 
       <div className="pb-8">
-        <h1 className="mt-4 font-serif text-3xl font-medium tracking-tight sm:text-4xl">
+        <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
           {post.title}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">{post.description}</p>
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-border py-3 text-xs text-muted-foreground">
-          <span>{post.category}</span>
           <span className="inline-flex items-center gap-1">
             <CalendarIcon className="size-3.5" />
             {formatDate(post.date)}
           </span>
+          <span>{post.category}</span>
           <ShareButton />
         </div>
       </div>

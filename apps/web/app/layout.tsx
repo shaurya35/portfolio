@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, Newsreader } from "next/font/google";
+import { Hanken_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Nav } from "@/components/nav";
@@ -13,12 +13,6 @@ import "./globals.css";
 const hankenGrotesk = Hanken_Grotesk({
   variable: "--font-hanken-grotesk",
   subsets: ["latin"],
-});
-
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
 });
 
 const SITE_URL = "https://shauryacodes.me";
@@ -69,7 +63,7 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       suppressHydrationWarning
-      className={`${hankenGrotesk.variable} ${newsreader.variable} h-full antialiased`}
+      className={`${hankenGrotesk.variable} h-full antialiased`}
     >
       <head>
         <InlineScript html={THEME_SCRIPT} />
