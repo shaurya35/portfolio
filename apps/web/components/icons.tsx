@@ -79,6 +79,18 @@ export function MediumIcon(props: IconProps) {
   );
 }
 
+export function NativeIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path
+        d="M200,88V216a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h96Z"
+        opacity={0.2}
+      />
+      <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H64A16,16,0,0,0,48,40V216a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM192,216H64V40h80V88a8,8,0,0,0,8,8h40V216Zm-88-56a8,8,0,0,1-8,8H88v8a8,8,0,0,1-16,0v-8H64a8,8,0,0,1,0-16h8v-8a8,8,0,0,1,16,0v8h8A8,8,0,0,1,104,160Zm64,32a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h32A8,8,0,0,1,168,192Zm0-32a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h32A8,8,0,0,1,168,160Z" />
+    </svg>
+  );
+}
+
 export function CopyIcon(props: IconProps) {
   return (
     <svg

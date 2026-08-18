@@ -1,4 +1,6 @@
-export type WritingSource = "x" | "medium";
+export type WritingSource = "x" | "medium" | "native";
+
+export type WritingStatus = "draft" | "published";
 
 export type Writing = {
   slug: string;
@@ -7,5 +9,7 @@ export type Writing = {
   date: string;
   category: string;
   source: WritingSource;
-  href: string;
+  href?: string;
+  html?: string;
+  status?: WritingStatus;
 };
