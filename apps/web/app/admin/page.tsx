@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <section className="mx-auto flex max-w-sm flex-col py-16">
+    <section className="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center py-16">
       <h1 className="text-2xl font-bold">Admin login</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Sign in to manage posts.
