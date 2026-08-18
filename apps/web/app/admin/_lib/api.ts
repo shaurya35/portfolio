@@ -61,11 +61,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiRequestError(response.status, message);
   }
 
-  if (response.status === 204) {
+  const text = await response.text();
+  if (text.length === 0) {
     return undefined as T;
   }
 
-  return (await response.json()) as T;
+  return JSON.parse(text) as T;
 }
 
 export function login(password: string): Promise<void> {
