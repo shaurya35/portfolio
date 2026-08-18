@@ -19,6 +19,7 @@ pub struct Config {
     pub revalidate_url: String,
     pub revalidate_secret: String,
     pub allowed_origin: String,
+    pub cookie_domain: String,
 }
 
 impl Config {
@@ -30,6 +31,7 @@ impl Config {
             revalidate_url: required("REVALIDATE_URL")?,
             revalidate_secret: required("REVALIDATE_SECRET")?,
             allowed_origin: required("ALLOWED_ORIGIN")?,
+            cookie_domain: optional("COOKIE_DOMAIN")?,
         })
     }
 }
@@ -38,6 +40,14 @@ fn required(key: &'static str) -> Result<String, ConfigError> {
     match env::var(key) {
         Ok(value) => Ok(value),
         Err(env::VarError::NotPresent) => Err(ConfigError::Missing(key)),
+        Err(env::VarError::NotUnicode(_)) => Err(ConfigError::NotUnicode(key)),
+    }
+}
+
+fn optional(key: &'static str) -> Result<String, ConfigError> {
+    match env::var(key) {
+        Ok(value) => Ok(value),
+        Err(env::VarError::NotPresent) => Ok(String::new()),
         Err(env::VarError::NotUnicode(_)) => Err(ConfigError::NotUnicode(key)),
     }
 }

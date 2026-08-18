@@ -29,7 +29,7 @@ pub(super) async fn login(
     }
 
     let epoch = *state.session_epoch.read().await;
-    let jar = jar.add(auth::session_cookie(epoch));
+    let jar = jar.add(auth::session_cookie(epoch, &state.config.cookie_domain));
 
     Ok((jar, StatusCode::OK))
 }
@@ -40,7 +40,7 @@ pub(super) async fn logout(
     jar: SignedCookieJar,
 ) -> (SignedCookieJar, StatusCode) {
     *state.session_epoch.write().await += 1;
-    let jar = jar.remove(auth::logout_cookie());
+    let jar = jar.remove(auth::logout_cookie(&state.config.cookie_domain));
     (jar, StatusCode::OK)
 }
 

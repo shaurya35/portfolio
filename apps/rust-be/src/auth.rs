@@ -17,26 +17,36 @@ pub fn verify_password(hash: &str, password: &str) -> Result<bool, AppError> {
         .is_ok())
 }
 
-pub fn session_cookie(epoch: u64) -> Cookie<'static> {
-    Cookie::build((ADMIN_COOKIE, epoch.to_string()))
-        .domain(".shauryacodes.me")
+pub fn session_cookie(epoch: u64, domain: &str) -> Cookie<'static> {
+    let mut cookie = Cookie::build((ADMIN_COOKIE, epoch.to_string()))
         .path("/")
         .same_site(SameSite::Lax)
         .secure(true)
         .http_only(true)
         .max_age(Duration::days(14))
-        .build()
+        .build();
+
+    if !domain.is_empty() {
+        cookie.set_domain(domain.to_owned());
+    }
+
+    cookie
 }
 
-pub fn logout_cookie() -> Cookie<'static> {
-    Cookie::build((ADMIN_COOKIE, ""))
-        .domain(".shauryacodes.me")
+pub fn logout_cookie(domain: &str) -> Cookie<'static> {
+    let mut cookie = Cookie::build((ADMIN_COOKIE, ""))
         .path("/")
         .same_site(SameSite::Lax)
         .secure(true)
         .http_only(true)
         .max_age(Duration::ZERO)
-        .build()
+        .build();
+
+    if !domain.is_empty() {
+        cookie.set_domain(domain.to_owned());
+    }
+
+    cookie
 }
 
 impl FromRef<AppState> for Key {
