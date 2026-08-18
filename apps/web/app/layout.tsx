@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { InlineScript } from "@/components/inline-script";
+import { Beacon } from "@/components/beacon";
 import { site } from "@/content/site";
 import { socials } from "@/content/socials";
 import "./globals.css";
@@ -78,6 +79,7 @@ export default function RootLayout({
         <Footer />
         <Analytics />
         <SpeedInsights />
+        <Beacon />
       </body>
     </html>
   );
