@@ -53,10 +53,13 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
+const ARROW_PATH =
+  "M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z";
+
 export function ArrowRightIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+      <path d={ARROW_PATH} />
     </svg>
   );
 }
@@ -65,6 +68,32 @@ export function ArrowUpRightIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
       <path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z" />
+    </svg>
+  );
+}
+
+export function ArrowLeftIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
+      <path transform="scale(-1,1) translate(-256,0)" d={ARROW_PATH} />
+    </svg>
+  );
+}
+
+export function ShareIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      {...props}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8.684 13.342a4 4 0 1 0 0-2.684m0 2.684 6.632 3.316m-6.632-6 6.632-3.316m0 0a4 4 0 1 0 3.868-4.984 4 4 0 0 0-3.868 4.984Zm0 10.632a4 4 0 1 0 3.868 4.984 4 4 0 0 0-3.868-4.984Z"
+      />
     </svg>
   );
 }
