@@ -1,9 +1,11 @@
+mod auth;
 mod config;
 mod db;
 mod error;
 mod extractors;
 mod markdown;
 mod models;
+mod revalidate;
 mod routes;
 mod state;
 
@@ -33,7 +35,7 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let state = AppState { pool };
+    let state = AppState { pool, config };
 
     let app = routes::router().with_state(state);
 

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PostStatus {
     Draft,
@@ -14,6 +14,13 @@ impl PostStatus {
             "draft" => Some(PostStatus::Draft),
             "published" => Some(PostStatus::Published),
             _ => None,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            PostStatus::Draft => "draft",
+            PostStatus::Published => "published",
         }
     }
 }
@@ -32,6 +39,60 @@ pub enum PostBody {
     X { url: String },
     Medium { url: String },
     Native { html: String },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "source", rename_all = "snake_case")]
+pub enum PostSource {
+    X { url: String },
+    Medium { url: String },
+    Native { markdown: String },
+}
+
+impl PostSource {
+    pub fn into_parts(self) -> (&'static str, Option<String>, Option<String>) {
+        match self {
+            PostSource::X { url } => ("x", Some(url), None),
+            PostSource::Medium { url } => ("medium", Some(url), None),
+            PostSource::Native { markdown } => ("native", None, Some(markdown)),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NewPost {
+    pub slug: String,
+    pub title: String,
+    pub description: String,
+    pub category: String,
+    #[serde(flatten)]
+    pub source: PostSource,
+    pub status: PostStatus,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdatePost {
+    pub title: String,
+    pub description: String,
+    pub category: String,
+    #[serde(flatten)]
+    pub source: PostSource,
+    pub status: PostStatus,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AdminPost {
+    pub id: i64,
+    pub slug: String,
+    pub title: String,
+    pub description: String,
+    pub category: String,
+    #[serde(flatten)]
+    pub source: PostSource,
+    pub status: PostStatus,
+    pub published_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 pub struct PostRow {
@@ -82,6 +143,35 @@ impl PostRow {
             body,
             status,
             published_at: self.published_at,
+        })
+    }
+
+    pub fn into_admin(self) -> Result<AdminPost, MalformedRow> {
+        let status = self.status()?;
+
+        let source = match self.source.as_str() {
+            "x" => self.url.map(|url| PostSource::X { url }),
+            "medium" => self.url.map(|url| PostSource::Medium { url }),
+            "native" => self
+                .markdown
+                .map(|markdown| PostSource::Native { markdown }),
+            _ => None,
+        }
+        .ok_or_else(|| MalformedRow {
+            slug: self.slug.clone(),
+        })?;
+
+        Ok(AdminPost {
+            id: self.id,
+            slug: self.slug,
+            title: self.title,
+            description: self.description,
+            category: self.category,
+            source,
+            status,
+            published_at: self.published_at,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         })
     }
 
