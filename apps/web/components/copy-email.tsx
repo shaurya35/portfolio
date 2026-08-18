@@ -17,7 +17,7 @@ export function CopyEmail({ email }: { email: string }) {
       type="button"
       onClick={copy}
       aria-label="Copy email address"
-      className="text-muted-foreground transition-colors hover:text-foreground"
+      className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
     >
       {copied ? (
         <CheckIcon className="size-4" />

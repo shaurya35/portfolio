@@ -83,7 +83,7 @@ export function WritingList({ writings }: { writings: Writing[] }) {
         <button
           type="button"
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
-          className="mt-6 inline-block rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-6 inline-block cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Show more ({remaining})
         </button>
