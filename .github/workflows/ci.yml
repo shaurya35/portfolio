@@ -38,4 +38,5 @@ jobs:
       - run: bun install --frozen-lockfile
         working-directory: .
       - run: bun run lint
+      - run: bunx next typegen
       - run: bunx tsc --noEmit
