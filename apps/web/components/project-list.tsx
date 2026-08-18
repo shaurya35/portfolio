@@ -63,7 +63,7 @@ export function ProjectList({ projects }: { projects: Project[] }) {
         <button
           type="button"
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
-          className="mt-6 inline-block rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-6 inline-block cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Show more ({remaining})
         </button>
@@ -87,7 +87,7 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors ${
+      className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors ${
         active
           ? "bg-foreground text-background"
           : "bg-muted text-muted-foreground hover:text-foreground"
