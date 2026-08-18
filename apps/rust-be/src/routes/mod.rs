@@ -2,6 +2,7 @@ use axum::Router;
 use axum::routing::{get, patch, post};
 
 mod admin;
+mod events;
 mod health;
 mod posts;
 mod stats;
@@ -21,4 +22,5 @@ pub fn router() -> Router<AppState> {
             patch(admin::update).delete(admin::delete),
         )
         .route("/admin/stats", get(stats::stats))
+        .route("/e", post(events::create))
 }
