@@ -11,15 +11,23 @@ pub enum ConfigError {
     NotUnicode(&'static str),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Config {
     pub database_url: String,
+    pub admin_password_hash: String,
+    pub cookie_key: String,
+    pub revalidate_url: String,
+    pub revalidate_secret: String,
 }
 
 impl Config {
     pub fn from_env() -> Result<Self, ConfigError> {
         Ok(Self {
             database_url: required("DATABASE_URL")?,
+            admin_password_hash: required("ADMIN_PASSWORD_HASH")?,
+            cookie_key: required("COOKIE_KEY")?,
+            revalidate_url: required("REVALIDATE_URL")?,
+            revalidate_secret: required("REVALIDATE_SECRET")?,
         })
     }
 }

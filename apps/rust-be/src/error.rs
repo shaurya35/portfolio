@@ -1,5 +1,5 @@
 use axum::Json;
-use axum::extract::rejection::JsonRejection;
+use axum::extract::rejection::{JsonRejection, QueryRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
@@ -12,6 +12,12 @@ pub enum AppError {
 
     #[error("not found")]
     NotFound,
+
+    #[error("unauthorized")]
+    Unauthorized,
+
+    #[error("conflict: {0}")]
+    Conflict(String),
 
     #[error("internal error: {0}")]
     Internal(String),
@@ -31,6 +37,12 @@ impl From<JsonRejection> for AppError {
     }
 }
 
+impl From<QueryRejection> for AppError {
+    fn from(rejection: QueryRejection) -> Self {
+        AppError::BadRequest(rejection.body_text())
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         if matches!(self, AppError::Database(_) | AppError::Internal(_)) {
@@ -40,6 +52,8 @@ impl IntoResponse for AppError {
         let (status, error) = match self {
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::NotFound => (StatusCode::NOT_FOUND, "not found".to_owned()),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized".to_owned()),
+            AppError::Conflict(msg) => (StatusCode::CONFLICT, msg),
             AppError::Internal(_) | AppError::Database(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "internal server error".to_owned(),
