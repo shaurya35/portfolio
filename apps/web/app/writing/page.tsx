@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { writings } from "@/content/writing";
+import { getPosts } from "@/lib/api";
 import { WritingList } from "@/components/writing-list";
 
 export const metadata: Metadata = {
@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   description: "Technical writing on what I've actually shipped.",
 };
 
-export default function WritingPage() {
+export default async function WritingPage() {
+  const writings = await getPosts();
+
   return (
     <section className="py-8">
       <div className="pb-8">

@@ -1,23 +1,20 @@
 import Link from "next/link";
-import { writings } from "@/content/writing";
+import { getPosts } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { SectionHeading } from "@/components/section-heading";
 import { CalendarIcon, ArrowRightIcon } from "@/components/icons";
 
-export function Writing() {
+export async function Writing() {
+  const writings = await getPosts();
+
   return (
     <section className="py-8">
       <SectionHeading>Writing</SectionHeading>
 
       <ul className="mt-4 flex flex-col gap-6">
-        {writings.slice(0, 3).map((post) => (
-          <li key={post.slug}>
-            <a
-              href={post.href}
-              target="_blank"
-              rel="noreferrer"
-              className="group block"
-            >
+        {writings.slice(0, 3).map((post) => {
+          const content = (
+            <>
               <h3 className="font-medium transition-colors group-hover:text-accent">
                 {post.title}
               </h3>
@@ -34,9 +31,28 @@ export function Writing() {
                   <ArrowRightIcon className="size-4" />
                 </span>
               </div>
-            </a>
-          </li>
-        ))}
+            </>
+          );
+
+          return (
+            <li key={post.slug}>
+              {post.source === "native" ? (
+                <Link href={`/writing/${post.slug}`} className="group block">
+                  {content}
+                </Link>
+              ) : (
+                <a
+                  href={post.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group block"
+                >
+                  {content}
+                </a>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       <Link
