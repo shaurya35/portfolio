@@ -55,6 +55,7 @@ async fn main() {
         pool,
         config,
         daily_salt,
+        session_epoch: Arc::new(RwLock::new(0)),
     };
 
     let app = routes::router().with_state(state);

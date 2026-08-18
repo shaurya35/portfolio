@@ -20,8 +20,17 @@ impl FromRequestParts<AppState> for Admin {
             Err(infallible) => match infallible {},
         };
 
-        jar.get(ADMIN_COOKIE)
-            .map(|_| Admin)
-            .ok_or(AppError::Unauthorized)
+        let cookie_epoch = jar
+            .get(ADMIN_COOKIE)
+            .and_then(|cookie| cookie.value().parse::<u64>().ok())
+            .ok_or(AppError::Unauthorized)?;
+
+        let current_epoch = *state.session_epoch.read().await;
+
+        if cookie_epoch == current_epoch {
+            Ok(Admin)
+        } else {
+            Err(AppError::Unauthorized)
+        }
     }
 }

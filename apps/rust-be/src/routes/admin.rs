@@ -28,12 +28,17 @@ pub(super) async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    let jar = jar.add(auth::session_cookie());
+    let epoch = *state.session_epoch.read().await;
+    let jar = jar.add(auth::session_cookie(epoch));
 
     Ok((jar, StatusCode::OK))
 }
 
-pub(super) async fn logout(jar: SignedCookieJar) -> (SignedCookieJar, StatusCode) {
+pub(super) async fn logout(
+    State(state): State<AppState>,
+    jar: SignedCookieJar,
+) -> (SignedCookieJar, StatusCode) {
+    *state.session_epoch.write().await += 1;
     let jar = jar.remove(auth::logout_cookie());
     (jar, StatusCode::OK)
 }

@@ -13,6 +13,7 @@ pub struct AppState {
     pub pool: PgPool,
     pub config: Config,
     pub daily_salt: Arc<RwLock<String>>,
+    pub session_epoch: Arc<RwLock<u64>>,
 }
 
 pub fn generate_salt() -> String {

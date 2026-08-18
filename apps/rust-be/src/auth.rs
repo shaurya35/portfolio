@@ -17,8 +17,8 @@ pub fn verify_password(hash: &str, password: &str) -> Result<bool, AppError> {
         .is_ok())
 }
 
-pub fn session_cookie() -> Cookie<'static> {
-    Cookie::build((ADMIN_COOKIE, "1"))
+pub fn session_cookie(epoch: u64) -> Cookie<'static> {
+    Cookie::build((ADMIN_COOKIE, epoch.to_string()))
         .domain(".shauryacodes.me")
         .path("/")
         .same_site(SameSite::Lax)
