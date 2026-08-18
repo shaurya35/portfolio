@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
   }
 
   revalidatePath("/writing");
+  revalidatePath("/writing/[slug]", "page");
   revalidatePath("/");
 
   return NextResponse.json({ revalidated: true }, { status: 200 });

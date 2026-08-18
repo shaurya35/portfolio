@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -49,26 +49,38 @@ function UrlPrompt({
 }) {
   const [value, setValue] = useState("");
 
+  const submit = () => {
+    if (value.trim().length > 0) {
+      onSubmit(value.trim());
+    }
+  };
+
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (value.trim().length > 0) {
-          onSubmit(value.trim());
-        }
-      }}
-      className="flex items-center gap-2"
-    >
+    // A plain div, not a <form>: this renders inside PostForm's own <form>,
+    // and nested <form> elements are invalid HTML — the browser can perform
+    // a native full-page submit instead of running our handler, wiping the
+    // editor. Enter/Escape on the input replace form submit/cancel semantics.
+    <div className="flex items-center gap-2">
       <input
         autoFocus
         value={value}
         onChange={(event) => setValue(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            submit();
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            onCancel();
+          }
+        }}
         placeholder={placeholder}
         className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs outline-none focus:border-accent"
       />
       <button
-        type="submit"
-        className="cursor-pointer rounded-md bg-accent px-2 py-1 text-xs font-medium text-background transition-opacity hover:opacity-90"
+        type="button"
+        onClick={submit}
+        className="cursor-pointer rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background transition-opacity hover:opacity-90"
       >
         Add
       </button>
@@ -79,7 +91,7 @@ function UrlPrompt({
       >
         Cancel
       </button>
-    </form>
+    </div>
   );
 }
 
@@ -199,16 +211,28 @@ function Toolbar({ editor }: { editor: Editor }) {
 }
 
 export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
+  // Captured once: the editor owns its document after mount. Feeding the
+  // live `content` prop back into `useEditor` on every keystroke (it changes
+  // every time `onUpdate` below calls `onChange`) makes Tiptap treat the
+  // options as changed on every render, which can tear down and recreate
+  // the editor using a stale `content` value — wiping whatever was typed.
+  const [initialContent] = useState(content);
+
+  const extensions = useMemo(
+    () => [
       StarterKit,
       Link.configure({ openOnClick: false }),
       Image,
       Placeholder.configure({ placeholder: "Write your post…" }),
       Markdown.configure({ html: false }),
     ],
-    content,
+    [],
+  );
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions,
+    content: initialContent,
     editorProps: {
       attributes: {
         class: "post-content min-h-64 px-3 py-2 outline-none",

@@ -72,7 +72,7 @@ export default function AdminPostsPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/admin/posts/new"
-            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            className="rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
             New post
           </Link>

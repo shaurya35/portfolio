@@ -225,7 +225,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
       <button
         type="submit"
         disabled={saving}
-        className="cursor-pointer self-start rounded-md bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="cursor-pointer self-start rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {saving ? "Saving…" : submitLabel}
       </button>
