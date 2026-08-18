@@ -14,3 +14,5 @@ dotenvy = "0.15.7"
 tracing = "0.1.44"
 sqlx = { version = "0.9.0", default-features = false, features = ["runtime-tokio", "tls-native-tls", "postgres", "macros", "migrate", "chrono"] }
 pulldown-cmark = "0.13"
+blake3 = "1.8.6"
+rand = "0.10.2"

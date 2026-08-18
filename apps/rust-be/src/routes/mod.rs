@@ -1,6 +1,7 @@
 use axum::Router;
-use axum::routing::get;
+use axum::routing::{get, post};
 
+mod events;
 mod health;
 mod posts;
 
@@ -11,4 +12,5 @@ pub fn router() -> Router<AppState> {
         .route("/health", get(health::health))
         .route("/posts", get(posts::list))
         .route("/posts/{slug}", get(posts::get))
+        .route("/e", post(events::create))
 }
