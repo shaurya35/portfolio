@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AdminPost, PostSource, PostStatus } from "@/app/admin/_lib/api";
 import { ApiRequestError } from "@/app/admin/_lib/api";
+import { RichTextEditor } from "@/app/admin/_components/rich-text-editor";
 
 export type PostFormValues = {
   slug: string;
@@ -47,6 +48,12 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
     event.preventDefault();
     setSlugError(null);
     setFormError(null);
+
+    if (source === "native" && markdown.trim().length === 0) {
+      setFormError("Write some content before saving.");
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -161,17 +168,8 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
 
       {source === "native" ? (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="markdown" className="text-sm text-muted-foreground">
-            Markdown
-          </label>
-          <textarea
-            id="markdown"
-            value={markdown}
-            onChange={(event) => setMarkdown(event.target.value)}
-            rows={16}
-            className="rounded-md border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-accent"
-            required
-          />
+          <span className="text-sm text-muted-foreground">Content</span>
+          <RichTextEditor content={markdown} onChange={setMarkdown} />
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
