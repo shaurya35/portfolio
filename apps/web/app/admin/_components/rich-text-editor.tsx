@@ -6,7 +6,11 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
 import { Markdown, type MarkdownStorage } from "tiptap-markdown";
+
+const lowlight = createLowlight(common);
 
 type RichTextEditorProps = {
   content: string;
@@ -244,7 +248,8 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
 
   const extensions = useMemo(
     () => [
-      StarterKit,
+      StarterKit.configure({ codeBlock: false }),
+      CodeBlockLowlight.configure({ lowlight }),
       Link.configure({ openOnClick: false }),
       Image,
       Placeholder.configure({ placeholder: "Write your post…" }),

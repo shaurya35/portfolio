@@ -6,6 +6,7 @@ import { formatDate, readingTime } from "@/lib/format";
 import { ArrowLeftIcon, CalendarIcon } from "@/components/icons";
 import { ShareButton } from "@/components/share-button";
 import { ReadingProgress } from "@/components/reading-progress";
+import { CodeBlockCopyButtons } from "@/components/code-copy-buttons";
 import type { Writing } from "@/types/writing";
 
 export async function generateStaticParams() {
@@ -95,6 +96,7 @@ export default async function WritingPostPage({
         className="post-content pt-8"
         dangerouslySetInnerHTML={{ __html: post.html }}
       />
+      <CodeBlockCopyButtons />
 
       {relatedPosts.length > 0 ? (
         <div className="mt-16 border-t border-border pt-8">

@@ -116,12 +116,19 @@ export function MediumIcon(props: IconProps) {
 
 export function NativeIcon(props: IconProps) {
   return (
-    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <g transform="rotate(45 128 128)">
-        <rect x="28" y="118" width="24" height="20" rx="4" opacity={0.2} />
-        <rect x="52" y="118" width="112" height="20" rx="2" />
-        <path d="M164,116 L164,140 L198,128 Z" />
-      </g>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      {...props}
+    >
+      <path
+        strokeLinejoin="round"
+        d="M6.5 2.5h7l4 4V21a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5Z"
+      />
+      <path strokeLinejoin="round" d="M13.5 2.5V6a1 1 0 0 0 1 1H18" />
+      <path strokeLinecap="round" d="M8.5 12.5h7M8.5 15.5h7M8.5 9.5h3" />
     </svg>
   );
 }
