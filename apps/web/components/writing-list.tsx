@@ -33,7 +33,7 @@ export function WritingList({ writings }: { writings: Writing[] }) {
           const isNative = post.source === "native";
           const content = (
             <>
-              <h3 className="text-lg leading-snug font-semibold transition-colors group-hover:text-accent">
+              <h3 className="truncate text-lg leading-snug font-semibold transition-colors group-hover:text-accent">
                 {post.title}
               </h3>
               <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
