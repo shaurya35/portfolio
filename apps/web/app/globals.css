@@ -62,17 +62,16 @@ body {
 }
 
 .post-content a {
-  color: inherit;
+  color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: var(--border);
+  text-decoration-color: currentColor;
   text-underline-offset: 2px;
   overflow-wrap: anywhere;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .post-content a:hover {
-  color: var(--accent);
-  text-decoration-color: var(--accent);
+  opacity: 0.75;
 }
 
 .post-content strong {
@@ -83,15 +82,14 @@ body {
   font-style: italic;
 }
 
-.post-content del {
-  color: var(--muted-foreground);
-}
-
+.post-content del,
 .post-content s {
   position: relative;
+  color: var(--muted-foreground);
   text-decoration: none;
 }
 
+.post-content del::after,
 .post-content s::after {
   content: "";
   position: absolute;
