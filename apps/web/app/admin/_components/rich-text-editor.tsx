@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EditorContent, useEditor, type Editor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -98,13 +98,41 @@ function UrlPrompt({
 function Toolbar({ editor }: { editor: Editor }) {
   const [prompt, setPrompt] = useState<"link" | "image" | null>(null);
 
+  const activeState = useEditorState({
+    editor,
+    selector: (ctx) => ({
+      bold: ctx.editor.isActive("bold"),
+      italic: ctx.editor.isActive("italic"),
+      strike: ctx.editor.isActive("strike"),
+      h2: ctx.editor.isActive("heading", { level: 2 }),
+      h3: ctx.editor.isActive("heading", { level: 3 }),
+      bulletList: ctx.editor.isActive("bulletList"),
+      orderedList: ctx.editor.isActive("orderedList"),
+      blockquote: ctx.editor.isActive("blockquote"),
+      codeBlock: ctx.editor.isActive("codeBlock"),
+      link: ctx.editor.isActive("link"),
+    }),
+  });
+
   if (prompt === "link") {
     return (
-      <div className="flex flex-wrap items-center gap-2 rounded-t-md border border-b-0 border-border bg-muted px-2 py-1.5">
+      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-t-md border border-b-0 border-border bg-muted px-2 py-1.5">
         <UrlPrompt
           placeholder="https://…"
           onSubmit={(url) => {
-            editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+            if (editor.state.selection.empty) {
+              editor
+                .chain()
+                .focus()
+                .insertContent({
+                  type: "text",
+                  text: url,
+                  marks: [{ type: "link", attrs: { href: url } }],
+                })
+                .run();
+            } else {
+              editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+            }
             setPrompt(null);
           }}
           onCancel={() => setPrompt(null)}
@@ -115,7 +143,7 @@ function Toolbar({ editor }: { editor: Editor }) {
 
   if (prompt === "image") {
     return (
-      <div className="flex flex-wrap items-center gap-2 rounded-t-md border border-b-0 border-border bg-muted px-2 py-1.5">
+      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-t-md border border-b-0 border-border bg-muted px-2 py-1.5">
         <UrlPrompt
           placeholder="Image URL…"
           onSubmit={(url) => {
@@ -129,24 +157,24 @@ function Toolbar({ editor }: { editor: Editor }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 rounded-t-md border border-b-0 border-border bg-muted px-2 py-1.5">
+    <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1.5 rounded-t-md border border-b-0 border-border bg-muted px-2 py-1.5">
       <ToolbarButton
         label="Bold"
-        active={editor.isActive("bold")}
+        active={activeState.bold}
         onClick={() => editor.chain().focus().toggleBold().run()}
       >
         Bold
       </ToolbarButton>
       <ToolbarButton
         label="Italic"
-        active={editor.isActive("italic")}
+        active={activeState.italic}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
         Italic
       </ToolbarButton>
       <ToolbarButton
         label="Strikethrough"
-        active={editor.isActive("strike")}
+        active={activeState.strike}
         onClick={() => editor.chain().focus().toggleStrike().run()}
       >
         Strike
@@ -154,14 +182,14 @@ function Toolbar({ editor }: { editor: Editor }) {
       <div className="mx-1 h-4 w-px bg-border" />
       <ToolbarButton
         label="Heading 2"
-        active={editor.isActive("heading", { level: 2 })}
+        active={activeState.h2}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         H2
       </ToolbarButton>
       <ToolbarButton
         label="Heading 3"
-        active={editor.isActive("heading", { level: 3 })}
+        active={activeState.h3}
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
       >
         H3
@@ -169,38 +197,34 @@ function Toolbar({ editor }: { editor: Editor }) {
       <div className="mx-1 h-4 w-px bg-border" />
       <ToolbarButton
         label="Bullet list"
-        active={editor.isActive("bulletList")}
+        active={activeState.bulletList}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       >
         • List
       </ToolbarButton>
       <ToolbarButton
         label="Numbered list"
-        active={editor.isActive("orderedList")}
+        active={activeState.orderedList}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
       >
         1. List
       </ToolbarButton>
       <ToolbarButton
         label="Quote"
-        active={editor.isActive("blockquote")}
+        active={activeState.blockquote}
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
       >
         Quote
       </ToolbarButton>
       <ToolbarButton
         label="Code block"
-        active={editor.isActive("codeBlock")}
+        active={activeState.codeBlock}
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
       >
         Code
       </ToolbarButton>
       <div className="mx-1 h-4 w-px bg-border" />
-      <ToolbarButton
-        label="Link"
-        active={editor.isActive("link")}
-        onClick={() => setPrompt("link")}
-      >
+      <ToolbarButton label="Link" active={activeState.link} onClick={() => setPrompt("link")}>
         Link
       </ToolbarButton>
       <ToolbarButton label="Image" onClick={() => setPrompt("image")}>

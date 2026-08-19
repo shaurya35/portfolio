@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, getPosts } from "@/lib/api";
 import { formatDate, readingTime } from "@/lib/format";
-import { ArrowLeftIcon } from "@/components/icons";
+import { ArrowLeftIcon, CalendarIcon } from "@/components/icons";
 import { ShareButton } from "@/components/share-button";
 import { ReadingProgress } from "@/components/reading-progress";
 import type { Writing } from "@/types/writing";
@@ -81,7 +81,10 @@ export default async function WritingPostPage({
         </h1>
         <p className="mt-3 text-lg text-muted-foreground">{post.description}</p>
         <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-          <span>{formatDate(post.date)}</span>
+          <span className="inline-flex items-center gap-1.5">
+            <CalendarIcon className="size-4" />
+            {formatDate(post.date)}
+          </span>
           <span>·</span>
           <span>{readingTime(post.html)}</span>
           <ShareButton />

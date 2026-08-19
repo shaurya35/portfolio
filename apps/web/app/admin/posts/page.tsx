@@ -11,6 +11,7 @@ import {
 } from "@/app/admin/_lib/api";
 import { LogoutButton } from "@/app/admin/_components/logout-button";
 import { StatusBadge } from "@/app/admin/_components/status-badge";
+import { TrashIcon } from "@/components/icons";
 
 export default function AdminPostsPage() {
   const router = useRouter();
@@ -95,17 +96,17 @@ export default function AdminPostsPage() {
           {posts.map((post) => (
             <li key={post.id} className="group relative flex items-center justify-between gap-4 py-3">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/admin/posts/${post.id}`}
-                    className="truncate font-medium transition-colors after:absolute after:inset-0 group-hover:text-accent"
-                  >
-                    {post.title}
-                  </Link>
+                <Link
+                  href={`/admin/posts/${post.id}`}
+                  className="block truncate font-medium transition-colors after:absolute after:inset-0 group-hover:text-accent"
+                >
+                  {post.title}
+                </Link>
+                <p className="mt-0.5 flex items-center gap-2 truncate text-sm text-muted-foreground">
                   <StatusBadge status={post.status} />
-                </div>
-                <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                  {post.slug} · {post.category} · {post.source}
+                  <span className="truncate">
+                    {post.slug} · {post.category} · {post.source}
+                  </span>
                 </p>
               </div>
               <div className="relative z-10 flex shrink-0 items-center gap-3">
@@ -113,9 +114,10 @@ export default function AdminPostsPage() {
                   type="button"
                   onClick={() => handleDelete(post)}
                   disabled={deletingId === post.id}
-                  className="cursor-pointer text-sm text-destructive transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Delete post"
+                  className="cursor-pointer text-destructive transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {deletingId === post.id ? "Deleting…" : "Delete"}
+                  <TrashIcon className="size-4" />
                 </button>
               </div>
             </li>
