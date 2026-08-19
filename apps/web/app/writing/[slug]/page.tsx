@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, getPosts } from "@/lib/api";
-import { formatDate } from "@/lib/format";
-import { CalendarIcon, ArrowLeftIcon } from "@/components/icons";
+import { formatDate, readingTime } from "@/lib/format";
+import { ArrowLeftIcon } from "@/components/icons";
 import { ShareButton } from "@/components/share-button";
 import { ReadingProgress } from "@/components/reading-progress";
 import type { Writing } from "@/types/writing";
@@ -57,9 +57,9 @@ export default async function WritingPostPage({
 
       <Link
         href="/writing"
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeftIcon className="size-3.5" />
+        <ArrowLeftIcon className="size-4" />
         Back to Writing
       </Link>
 
@@ -68,12 +68,13 @@ export default async function WritingPostPage({
           {post.title}
         </h1>
         <p className="mt-3 text-base text-muted-foreground">{post.description}</p>
-        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <CalendarIcon className="size-3.5" />
-            {formatDate(post.date)}
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+          <span className="rounded-md border border-border px-2 py-0.5 text-xs">
+            {post.category}
           </span>
-          <span>{post.category}</span>
+          <span>{formatDate(post.date)}</span>
+          <span>·</span>
+          <span>{readingTime(post.html)}</span>
           <ShareButton />
         </div>
       </div>

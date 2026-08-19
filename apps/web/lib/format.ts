@@ -24,3 +24,12 @@ export function formatRange(start: string, end: string | null): string {
   const endLabel = end ? formatMonthYear(end) : "Present";
   return `${startLabel} – ${endLabel}`;
 }
+
+const WORDS_PER_MINUTE = 200;
+
+export function readingTime(html: string): string {
+  const text = html.replace(/<[^>]+>/g, " ");
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.round(words / WORDS_PER_MINUTE));
+  return `${minutes} min read`;
+}

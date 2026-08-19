@@ -47,8 +47,15 @@ export function MailIcon(props: IconProps) {
 
 export function CalendarIcon(props: IconProps) {
   return (
-    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-68-76a12,12,0,1,1-12-12A12,12,0,0,1,140,132Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,184,132ZM96,172a12,12,0,1,1-12-12A12,12,0,0,1,96,172Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,140,172Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,184,172Z" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      {...props}
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path strokeLinecap="round" d="M3 9.5h18M8 3v3M16 3v3" />
     </svg>
   );
 }
@@ -82,31 +89,17 @@ export function ArrowLeftIcon(props: IconProps) {
 
 export function ShareIcon(props: IconProps) {
   return (
-    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
-      <circle cx="64" cy="128" r="32" opacity={0.2} />
-      <circle cx="192" cy="64" r="32" opacity={0.2} />
-      <circle cx="192" cy="192" r="32" opacity={0.2} />
-      <line
-        x1="91"
-        y1="112"
-        x2="165"
-        y2="78"
-        stroke="currentColor"
-        strokeWidth="16"
-        strokeLinecap="round"
-      />
-      <line
-        x1="91"
-        y1="144"
-        x2="165"
-        y2="178"
-        stroke="currentColor"
-        strokeWidth="16"
-        strokeLinecap="round"
-      />
-      <circle cx="64" cy="128" r="28" />
-      <circle cx="192" cy="64" r="28" />
-      <circle cx="192" cy="192" r="28" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      {...props}
+    >
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="17.5" cy="6" r="2.5" />
+      <circle cx="17.5" cy="18" r="2.5" />
+      <path strokeLinecap="round" d="M8.2 10.8 15.3 7.2M8.2 13.2l7.1 3.6" />
     </svg>
   );
 }
