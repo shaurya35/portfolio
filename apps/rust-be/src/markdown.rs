@@ -1,42 +1,28 @@
 use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag, TagEnd, html};
 use std::sync::LazyLock;
-use syntect::easy::HighlightLines;
-use syntect::highlighting::{Theme, ThemeSet};
-use syntect::html::{
-    IncludeBackground, append_highlighted_html_for_styled_line, start_highlighted_html_snippet,
-};
+use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
+const CODE_CLASS_STYLE: ClassStyle = ClassStyle::SpacedPrefixed { prefix: "sy-" };
+
 static SYNTAX_SET: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
-static THEME: LazyLock<Theme> = LazyLock::new(|| {
-    let mut themes = ThemeSet::load_defaults();
-    themes
-        .themes
-        .remove("base16-ocean.dark")
-        .expect("bundled syntect theme is present")
-});
 
 fn highlight_code_block(code: &str, lang: &str) -> String {
     let syntax = SYNTAX_SET
         .find_syntax_by_token(lang)
         .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());
 
-    let mut highlighter = HighlightLines::new(syntax, &THEME);
-    let (mut output, bg) = start_highlighted_html_snippet(&THEME);
-
+    let mut generator =
+        ClassedHTMLGenerator::new_with_class_style(syntax, &SYNTAX_SET, CODE_CLASS_STYLE);
     for line in LinesWithEndings::from(code) {
-        if let Ok(regions) = highlighter.highlight_line(line, &SYNTAX_SET) {
-            let _ = append_highlighted_html_for_styled_line(
-                &regions[..],
-                IncludeBackground::IfDifferent(bg),
-                &mut output,
-            );
-        }
+        let _ = generator.parse_html_for_line_which_includes_newline(line);
     }
 
-    output.push_str("</pre>\n");
-    output
+    format!(
+        "<pre class=\"sy-code\"><code>{}</code></pre>\n",
+        generator.finalize()
+    )
 }
 
 pub fn render(markdown: &str) -> String {
