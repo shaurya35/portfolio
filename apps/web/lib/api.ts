@@ -2,6 +2,27 @@ import type { Writing, WritingSource, WritingStatus } from "@/types/writing";
 
 const REVALIDATE_SECONDS = 3600;
 
+/** Thrown when the backend URL is missing, to separate a deployment
+ * misconfiguration from an ordinary request failure in build logs. */
+class ApiConfigError extends Error {}
+
+function apiBase(): string {
+  const base = process.env.RUST_API_URL;
+
+  if (!base) {
+    throw new ApiConfigError(
+      "RUST_API_URL is not set. Next reads it from apps/web/.env locally, but " +
+        "on Vercel it comes from the project environment — and Turborepo runs " +
+        "tasks in strict env mode, so it must also be listed under tasks.build.env " +
+        "in turbo.json or it is stripped before next build runs.",
+    );
+  }
+
+  // A trailing slash would produce "//posts", which some proxies treat as a
+  // different route than "/posts".
+  return base.replace(/\/+$/, "");
+}
+
 type PostSummary = {
   slug: string;
   title: string;
@@ -41,7 +62,7 @@ function toWritingDetail(post: PostDetail): Writing {
 }
 
 export async function getPosts(): Promise<Writing[]> {
-  const res = await fetch(`${process.env.RUST_API_URL}/posts`, {
+  const res = await fetch(`${apiBase()}/posts`, {
     next: { revalidate: REVALIDATE_SECONDS },
   });
   if (!res.ok) {
@@ -53,10 +74,9 @@ export async function getPosts(): Promise<Writing[]> {
 }
 
 export async function getPost(slug: string): Promise<Writing | undefined> {
-  const res = await fetch(
-    `${process.env.RUST_API_URL}/posts/${encodeURIComponent(slug)}`,
-    { next: { revalidate: REVALIDATE_SECONDS } },
-  );
+  const res = await fetch(`${apiBase()}/posts/${encodeURIComponent(slug)}`, {
+    next: { revalidate: REVALIDATE_SECONDS },
+  });
 
   if (res.status === 404) {
     return undefined;

@@ -28,6 +28,24 @@ const sources: { value: PostSource; label: string }[] = [
   { value: "medium", label: "Medium" },
 ];
 
+/**
+ * Title -> URL slug.
+ *
+ * NFKD-normalising first means accented characters degrade to their base
+ * letter ("Über" -> "uber") instead of being dropped entirely, which is what a
+ * naive strip of non-ASCII would do. Anything still not a letter, digit or
+ * hyphen collapses to a single hyphen, and leading/trailing hyphens are
+ * trimmed so a title ending in punctuation does not yield "my-post-".
+ */
+function slugify(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
   const isEditing = initial !== undefined;
 
@@ -39,6 +57,13 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
   const [url, setUrl] = useState(initial?.url ?? "");
   const [markdown, setMarkdown] = useState(initial?.markdown ?? "");
   const [status, setStatus] = useState<PostStatus>(initial?.status ?? "draft");
+
+  // A slug mirrors the title until the author touches it. After that it is
+  // theirs and the title must never overwrite it — silently clobbering a
+  // deliberate URL while someone edits the headline is the failure mode this
+  // guards against. Existing posts start detached: their slug is already
+  // fixed and the field is disabled anyway.
+  const [slugTouched, setSlugTouched] = useState(isEditing);
 
   const [slugError, setSlugError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -89,17 +114,32 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
         <input
           id="slug"
           value={slug}
-          onChange={(event) => setSlug(event.target.value)}
+          onChange={(event) => {
+            // Sanitise on the way in, but preserve a trailing separator so
+            // the field stays typeable. Both a space and a hyphen have to
+            // count here: slugify trims trailing separators, so if only "-"
+            // were kept, pressing space would be swallowed and "a b c" would
+            // land as "abc".
+            const raw = event.target.value;
+            const trailing = /[\s-]$/.test(raw) ? "-" : "";
+            const next = slugify(raw) + trailing;
+            // Emptying the field is the escape hatch back to tracking the
+            // title, so a mistaken edit is recoverable without a reload.
+            setSlugTouched(next.length > 0);
+            setSlug(next.length > 0 ? next : slugify(title));
+          }}
           disabled={isEditing}
           placeholder="my-post-slug"
           className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent disabled:cursor-not-allowed disabled:opacity-60"
           required
         />
-        {isEditing ? (
-          <p className="text-xs text-muted-foreground">
-            Slug cannot be changed after creation.
-          </p>
-        ) : null}
+        <p className="text-xs text-muted-foreground">
+          {isEditing
+            ? "Slug cannot be changed after creation."
+            : slugTouched
+              ? "Custom slug. Clear it to follow the title again."
+              : "Generated from the title. Edit it to set your own."}
+        </p>
         {slugError ? (
           <p role="alert" className="text-sm text-destructive">
             {slugError}
@@ -114,7 +154,13 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
         <input
           id="title"
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) => {
+            const nextTitle = event.target.value;
+            setTitle(nextTitle);
+            if (!slugTouched) {
+              setSlug(slugify(nextTitle));
+            }
+          }}
           className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
           required
         />

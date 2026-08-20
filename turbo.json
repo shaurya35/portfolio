@@ -5,6 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "env": ["RUST_API_URL", "NEXT_PUBLIC_RUST_API_URL", "REVALIDATE_SECRET"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "target/**"]
     },
     "lint": {

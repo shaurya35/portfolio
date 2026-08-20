@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
+import {
+  EditorContent,
+  useEditor,
+  useEditorState,
+  type Editor,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -16,8 +21,76 @@ const lowlight = createLowlight(common);
 // view — it never writes the detected language back onto the node. Left
 // alone, every code block round-trips to Markdown as a bare ``` fence with no
 // language hint, so the backend's syntect highlighter has nothing to key off
-// and renders plain text. Override the markdown serializer to run the same
-// auto-detection at save time when no language was explicitly set.
+// and renders plain text. Override the markdown serializer to stamp a language
+// onto the fence at save time.
+//
+// The auto-detect fallback is deliberately conservative. highlightAuto is
+// happy to label a `curl ... -d '{json}'` block as `vbnet` on a relevance of
+// 6, and a confidently wrong fence is worse than a bare one: an unknown
+// language makes the backend fall through to its own detection, but a *valid*
+// wrong one (shell tagged `javascript`) overrides it and highlights garbage.
+// So: only languages the backend can render, and only above a relevance floor.
+// Everything else emits a bare fence and lets the server decide.
+const AUTO_DETECT_MIN_RELEVANCE = 8;
+
+// Languages worth guessing at, restricted to what the backend's syntect syntax
+// set actually resolves. Kept in sync with normalize_lang() in
+// apps/rust-be/src/markdown.rs.
+const AUTO_DETECTABLE = new Set([
+  "rust",
+  "bash",
+  "shell",
+  "json",
+  "javascript",
+  "typescript",
+  "python",
+  "sql",
+  "yaml",
+  "xml",
+  "css",
+  "go",
+  "java",
+  "c",
+  "cpp",
+  "ruby",
+  "php",
+]);
+
+// Offered in the toolbar. Value is written verbatim into the fence, so every
+// entry must be resolvable by normalize_lang() on the backend.
+const LANGUAGES = [
+  { value: "", label: "Auto" },
+  { value: "rust", label: "Rust" },
+  { value: "bash", label: "Shell" },
+  { value: "json", label: "JSON" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "python", label: "Python" },
+  { value: "sql", label: "SQL" },
+  { value: "yaml", label: "YAML" },
+  { value: "html", label: "HTML" },
+  { value: "css", label: "CSS" },
+  { value: "go", label: "Go" },
+  { value: "diff", label: "Diff" },
+  { value: "markdown", label: "Markdown" },
+];
+
+function autoDetectLanguage(code: string): string {
+  if (code.trim().length === 0) {
+    return "";
+  }
+
+  const result = lowlight.highlightAuto(code);
+  const language = result.data?.language ?? "";
+  const relevance = result.data?.relevance ?? 0;
+
+  if (!AUTO_DETECTABLE.has(language) || relevance < AUTO_DETECT_MIN_RELEVANCE) {
+    return "";
+  }
+
+  return language;
+}
+
 type MarkdownWritableState = {
   write: (text: string) => void;
   text: (text: string, escape?: boolean) => void;
@@ -36,9 +109,7 @@ const CodeBlock = CodeBlockLowlight.extend({
       markdown: {
         serialize(state: MarkdownWritableState, node: CodeBlockNode) {
           const language =
-            node.attrs.language ||
-            lowlight.highlightAuto(node.textContent).data?.language ||
-            "";
+            node.attrs.language || autoDetectLanguage(node.textContent);
           state.write("```" + language + "\n");
           state.text(node.textContent, false);
           state.ensureNewLine();
@@ -62,7 +133,12 @@ type ToolbarButtonProps = {
   label: string;
 };
 
-function ToolbarButton({ active, onClick, children, label }: ToolbarButtonProps) {
+function ToolbarButton({
+  active,
+  onClick,
+  children,
+  label,
+}: ToolbarButtonProps) {
   return (
     <button
       type="button"
@@ -142,18 +218,34 @@ function Toolbar({ editor }: { editor: Editor }) {
 
   const activeState = useEditorState({
     editor,
-    selector: (ctx) => ({
-      bold: ctx.editor.isActive("bold"),
-      italic: ctx.editor.isActive("italic"),
-      strike: ctx.editor.isActive("strike"),
-      h2: ctx.editor.isActive("heading", { level: 2 }),
-      h3: ctx.editor.isActive("heading", { level: 3 }),
-      bulletList: ctx.editor.isActive("bulletList"),
-      orderedList: ctx.editor.isActive("orderedList"),
-      blockquote: ctx.editor.isActive("blockquote"),
-      codeBlock: ctx.editor.isActive("codeBlock"),
-      link: ctx.editor.isActive("link"),
-    }),
+    // Active marks are reported only while the editor holds focus. An
+    // unfocused editor still has a cursor parked at the start of the document,
+    // so on open the toolbar would light up whichever block happened to be
+    // first — showing "H3" as pressed before the user had clicked anything.
+    // No focus means no cursor the user put there, so nothing is highlighted.
+    selector: (ctx) => {
+      const focused = ctx.editor.isFocused;
+      const activeWhenFocused = (
+        name: string,
+        attrs?: Record<string, unknown>,
+      ) => focused && ctx.editor.isActive(name, attrs);
+
+      return {
+        bold: activeWhenFocused("bold"),
+        italic: activeWhenFocused("italic"),
+        strike: activeWhenFocused("strike"),
+        h2: activeWhenFocused("heading", { level: 2 }),
+        h3: activeWhenFocused("heading", { level: 3 }),
+        bulletList: activeWhenFocused("bulletList"),
+        orderedList: activeWhenFocused("orderedList"),
+        blockquote: activeWhenFocused("blockquote"),
+        codeBlock: activeWhenFocused("codeBlock"),
+        codeBlockLanguage:
+          (ctx.editor.getAttributes("codeBlock").language as string | null) ??
+          "",
+        link: activeWhenFocused("link"),
+      };
+    },
   });
 
   if (prompt === "link") {
@@ -173,7 +265,12 @@ function Toolbar({ editor }: { editor: Editor }) {
                 })
                 .run();
             } else {
-              editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+              editor
+                .chain()
+                .focus()
+                .extendMarkRange("link")
+                .setLink({ href: url })
+                .run();
             }
             setPrompt(null);
           }}
@@ -265,8 +362,34 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         Code
       </ToolbarButton>
+      {activeState.codeBlock ? (
+        <select
+          aria-label="Code block language"
+          value={activeState.codeBlockLanguage}
+          onChange={(event) =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("codeBlock", {
+                language: event.target.value || null,
+              })
+              .run()
+          }
+          className="cursor-pointer rounded-md border border-border bg-background px-1.5 py-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus:border-accent"
+        >
+          {LANGUAGES.map((language) => (
+            <option key={language.value} value={language.value}>
+              {language.label}
+            </option>
+          ))}
+        </select>
+      ) : null}
       <div className="mx-1 h-4 w-px bg-border" />
-      <ToolbarButton label="Link" active={activeState.link} onClick={() => setPrompt("link")}>
+      <ToolbarButton
+        label="Link"
+        active={activeState.link}
+        onClick={() => setPrompt("link")}
+      >
         Link
       </ToolbarButton>
       <ToolbarButton label="Image" onClick={() => setPrompt("image")}>

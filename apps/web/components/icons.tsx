@@ -115,20 +115,23 @@ export function MediumIcon(props: IconProps) {
 }
 
 export function NativeIcon(props: IconProps) {
+  // A pencil, not a document. This renders at 12px beside the category label,
+  // and the previous file-with-three-text-lines glyph carried far too much
+  // detail to survive at that size — the strokes collapsed into a grey smudge.
+  // Two strokes read cleanly when small, and "written here" distinguishes an
+  // original post from the X / Medium logos used for syndicated ones.
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       {...props}
     >
-      <path
-        strokeLinejoin="round"
-        d="M6.5 2.5h7l4 4V21a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5Z"
-      />
-      <path strokeLinejoin="round" d="M13.5 2.5V6a1 1 0 0 0 1 1H18" />
-      <path strokeLinecap="round" d="M8.5 12.5h7M8.5 15.5h7M8.5 9.5h3" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7.5 18.5l-4 1 1-4Z" />
+      <path d="M14.5 5.5l3 3" />
     </svg>
   );
 }
@@ -195,8 +198,14 @@ export function TrashIcon(props: IconProps) {
       strokeWidth={1.5}
       {...props}
     >
-      <path strokeLinecap="round" d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-      <path strokeLinecap="round" d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
+      <path
+        strokeLinecap="round"
+        d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"
+      />
+      <path
+        strokeLinecap="round"
+        d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"
+      />
       <path strokeLinecap="round" d="M10 11v6M14 11v6" />
     </svg>
   );

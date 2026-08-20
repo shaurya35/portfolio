@@ -43,7 +43,9 @@ export default function AdminPostsPage() {
   }, [router]);
 
   const handleDelete = async (post: AdminPost) => {
-    const confirmed = window.confirm(`Delete "${post.title}"? This cannot be undone.`);
+    const confirmed = window.confirm(
+      `Delete "${post.title}"? This cannot be undone.`,
+    );
     if (!confirmed) return;
 
     setDeletingId(post.id);
@@ -94,16 +96,22 @@ export default function AdminPostsPage() {
       {posts !== null && posts.length > 0 ? (
         <ul className="flex flex-col divide-y divide-border border-y border-border">
           {posts.map((post) => (
-            <li key={post.id} className="group relative flex items-center justify-between gap-4 py-3">
+            <li
+              key={post.id}
+              className="group relative flex items-center justify-between gap-4 py-3"
+            >
               <div className="min-w-0">
                 <Link
                   href={`/admin/posts/${post.id}`}
-                  className="block truncate font-medium transition-colors after:absolute after:inset-0 group-hover:text-accent"
+                  className="block truncate font-medium after:absolute after:inset-0"
                 >
                   {post.title}
                 </Link>
-                <p className="mt-0.5 flex items-center gap-2 truncate text-sm text-muted-foreground">
+                <p className="mt-1 flex items-center gap-2 truncate text-xs text-muted-foreground">
                   <StatusBadge status={post.status} />
+                  <span aria-hidden="true" className="text-border">
+                    |
+                  </span>
                   <span className="truncate">
                     {post.slug} · {post.category} · {post.source}
                   </span>
@@ -115,7 +123,7 @@ export default function AdminPostsPage() {
                   onClick={() => handleDelete(post)}
                   disabled={deletingId === post.id}
                   aria-label="Delete post"
-                  className="cursor-pointer text-destructive transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer text-muted-foreground transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <TrashIcon className="size-4" />
                 </button>
