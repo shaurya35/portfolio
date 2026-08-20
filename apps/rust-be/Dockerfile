@@ -16,8 +16,10 @@ FROM debian:trixie-slim AS runtime
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libssl3 \
     && rm -rf /var/lib/apt/lists/*
+RUN useradd --system --create-home --shell /usr/sbin/nologin app
 WORKDIR /app
-COPY --from=builder /app/target/release/rust-be /app/rust-be
-COPY --from=builder /app/migrations /app/migrations
+COPY --from=builder --chown=app:app /app/target/release/rust-be /app/rust-be
+COPY --from=builder --chown=app:app /app/migrations /app/migrations
+USER app
 EXPOSE 8080
 CMD ["/app/rust-be"]
