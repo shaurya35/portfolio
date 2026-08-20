@@ -12,6 +12,44 @@ import { Markdown, type MarkdownStorage } from "tiptap-markdown";
 
 const lowlight = createLowlight(common);
 
+// CodeBlockLowlight only uses lowlight.highlightAuto() to decorate the editor
+// view — it never writes the detected language back onto the node. Left
+// alone, every code block round-trips to Markdown as a bare ``` fence with no
+// language hint, so the backend's syntect highlighter has nothing to key off
+// and renders plain text. Override the markdown serializer to run the same
+// auto-detection at save time when no language was explicitly set.
+type MarkdownWritableState = {
+  write: (text: string) => void;
+  text: (text: string, escape?: boolean) => void;
+  ensureNewLine: () => void;
+  closeBlock: (node: unknown) => void;
+};
+
+type CodeBlockNode = {
+  attrs: { language?: string | null };
+  textContent: string;
+};
+
+const CodeBlock = CodeBlockLowlight.extend({
+  addStorage() {
+    return {
+      markdown: {
+        serialize(state: MarkdownWritableState, node: CodeBlockNode) {
+          const language =
+            node.attrs.language ||
+            lowlight.highlightAuto(node.textContent).data?.language ||
+            "";
+          state.write("```" + language + "\n");
+          state.text(node.textContent, false);
+          state.ensureNewLine();
+          state.write("```");
+          state.closeBlock(node);
+        },
+      },
+    };
+  },
+});
+
 type RichTextEditorProps = {
   content: string;
   onChange: (markdown: string) => void;
@@ -249,7 +287,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
   const extensions = useMemo(
     () => [
       StarterKit.configure({ codeBlock: false }),
-      CodeBlockLowlight.configure({ lowlight }),
+      CodeBlock.configure({ lowlight }),
       Link.configure({ openOnClick: false }),
       Image,
       Placeholder.configure({ placeholder: "Write your post…" }),
