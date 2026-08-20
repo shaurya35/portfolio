@@ -73,14 +73,16 @@ async fn main() {
 
     let app = routes::router().with_state(state).layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let addr = format!("0.0.0.0:{port}");
+    let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .unwrap_or_else(|err| {
             eprintln!("failed to bind: {err}");
             std::process::exit(1);
         });
 
-    println!("Server running on http://localhost:8080");
+    println!("Server running on http://localhost:{port}");
 
     axum::serve(listener, app).await.unwrap_or_else(|err| {
         eprintln!("server error: {err}");
