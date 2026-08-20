@@ -20,7 +20,7 @@ pub fn verify_password(hash: &str, password: &str) -> Result<bool, AppError> {
 pub fn session_cookie(epoch: u64, domain: &str) -> Cookie<'static> {
     let mut cookie = Cookie::build((ADMIN_COOKIE, epoch.to_string()))
         .path("/")
-        .same_site(SameSite::Lax)
+        .same_site(SameSite::None)
         .secure(true)
         .http_only(true)
         .max_age(Duration::days(14))
@@ -36,7 +36,7 @@ pub fn session_cookie(epoch: u64, domain: &str) -> Cookie<'static> {
 pub fn logout_cookie(domain: &str) -> Cookie<'static> {
     let mut cookie = Cookie::build((ADMIN_COOKIE, ""))
         .path("/")
-        .same_site(SameSite::Lax)
+        .same_site(SameSite::None)
         .secure(true)
         .http_only(true)
         .max_age(Duration::ZERO)
