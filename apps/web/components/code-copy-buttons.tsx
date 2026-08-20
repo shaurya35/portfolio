@@ -49,7 +49,11 @@ export function CodeBlockCopyButtons() {
 
     return () => {
       for (const root of roots) {
-        root.unmount();
+        // Deferred: unmounting synchronously here can race with React's own
+        // render pass for the surrounding tree (e.g. fast navigation away
+        // from the page), producing "Attempted to synchronously unmount a
+        // root while React was already rendering."
+        queueMicrotask(() => root.unmount());
       }
     };
   }, []);
