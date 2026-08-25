@@ -20,5 +20,15 @@ export async function POST(request: NextRequest) {
   revalidatePath("/writing/[slug]", "page");
   revalidatePath("/");
 
+  // revalidatePath only marks the cache stale — the actual re-render happens
+  // on the next request to that path. Warm it here, inside this handler, so
+  // the page is already fresh by the time this responds instead of waiting
+  // on whichever visitor happens to hit it next.
+  const origin = request.nextUrl.origin;
+  await Promise.allSettled([
+    fetch(`${origin}/writing`, { cache: "no-store" }),
+    fetch(`${origin}/`, { cache: "no-store" }),
+  ]);
+
   return NextResponse.json({ revalidated: true }, { status: 200 });
 }
