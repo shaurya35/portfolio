@@ -612,7 +612,10 @@ mod tests {
     #[test]
     fn email_autolinks_keep_mailto_and_skip_new_tab() {
         let out = render("<hello@example.com>");
-        assert!(out.contains(r#"href="mailto:hello@example.com""#), "got: {out}");
+        assert!(
+            out.contains(r#"href="mailto:hello@example.com""#),
+            "got: {out}"
+        );
         assert!(!out.contains("target=\"_blank\""), "got: {out}");
     }
 }
