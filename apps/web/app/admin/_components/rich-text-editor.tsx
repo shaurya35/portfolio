@@ -234,6 +234,7 @@ function Toolbar({ editor }: { editor: Editor }) {
         bold: activeWhenFocused("bold"),
         italic: activeWhenFocused("italic"),
         strike: activeWhenFocused("strike"),
+        code: activeWhenFocused("code"),
         h2: activeWhenFocused("heading", { level: 2 }),
         h3: activeWhenFocused("heading", { level: 3 }),
         bulletList: activeWhenFocused("bulletList"),
@@ -317,6 +318,13 @@ function Toolbar({ editor }: { editor: Editor }) {
         onClick={() => editor.chain().focus().toggleStrike().run()}
       >
         Strike
+      </ToolbarButton>
+      <ToolbarButton
+        label="Inline code"
+        active={activeState.code}
+        onClick={() => editor.chain().focus().toggleCode().run()}
+      >
+        <span className="font-mono">{"<>"}</span>
       </ToolbarButton>
       <div className="mx-1 h-4 w-px bg-border" />
       <ToolbarButton
