@@ -1726,6 +1726,7 @@ dependencies = [
  "cookie",
  "dotenvy",
  "pulldown-cmark",
+ "pulldown-cmark-escape",
  "rand 0.10.2",
  "reqwest",
  "serde",

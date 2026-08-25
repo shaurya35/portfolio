@@ -1,4 +1,4 @@
-use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag, TagEnd, html};
+use pulldown_cmark::{CodeBlockKind, Event, LinkType, Options, Parser, Tag, TagEnd, html};
 use std::sync::LazyLock;
 use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
@@ -386,6 +386,33 @@ fn score_yaml(code: &str) -> i32 {
     score
 }
 
+/// Post content is read standalone (no in-page nav back to the writing
+/// list), so a same-tab link navigates the reader away from the article
+/// entirely. `target="_blank"` keeps them on the post; `rel="noopener
+/// noreferrer"` is required alongside it so the opened page can't reach back
+/// into `window.opener`. Mirrors pulldown-cmark's own html.rs for the
+/// mailto: prefix and escaping, since we're replacing its default renderer
+/// for this tag rather than calling into it.
+fn link_open_tag(link_type: LinkType, dest_url: &str, title: &str) -> String {
+    let mut href = String::new();
+    if link_type == LinkType::Email {
+        href.push_str("mailto:");
+    }
+    let _ = pulldown_cmark_escape::escape_href(&mut href, dest_url);
+
+    let mut tag = format!("<a href=\"{href}\"");
+    if link_type != LinkType::Email {
+        tag.push_str(" target=\"_blank\" rel=\"noopener noreferrer\"");
+    }
+    if !title.is_empty() {
+        let mut escaped_title = String::new();
+        let _ = pulldown_cmark_escape::escape_html(&mut escaped_title, title);
+        tag.push_str(&format!(" title=\"{escaped_title}\""));
+    }
+    tag.push('>');
+    tag
+}
+
 fn highlight_code_block(code: &str, lang: &str) -> String {
     let syntax = syntax_for(code, lang);
 
@@ -435,6 +462,19 @@ pub fn render(markdown: &str) -> String {
                 if let Some((lang, code)) = code_block.take() {
                     events.push(Event::Html(highlight_code_block(&code, &lang).into()));
                 }
+            }
+            Event::Start(Tag::Link {
+                link_type,
+                dest_url,
+                title,
+                ..
+            }) => {
+                events.push(Event::Html(
+                    link_open_tag(link_type, &dest_url, &title).into(),
+                ));
+            }
+            Event::End(TagEnd::Link) => {
+                events.push(Event::Html("</a>".into()));
             }
             other => events.push(other),
         }
@@ -558,5 +598,21 @@ mod tests {
         // Guard the existing XSS protection while changing this file.
         let out = render("<script>alert(1)</script>\n\nhello");
         assert!(!out.contains("<script"));
+    }
+
+    #[test]
+    fn links_open_in_a_new_tab() {
+        let out = render("[Medium](https://medium.com/@someone/post)");
+        assert!(
+            out.contains(r#"<a href="https://medium.com/@someone/post" target="_blank" rel="noopener noreferrer">Medium</a>"#),
+            "got: {out}"
+        );
+    }
+
+    #[test]
+    fn email_autolinks_keep_mailto_and_skip_new_tab() {
+        let out = render("<hello@example.com>");
+        assert!(out.contains(r#"href="mailto:hello@example.com""#), "got: {out}");
+        assert!(!out.contains("target=\"_blank\""), "got: {out}");
     }
 }
