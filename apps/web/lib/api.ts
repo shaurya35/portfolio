@@ -1,7 +1,5 @@
 import type { Writing, WritingSource, WritingStatus } from "@/types/writing";
 
-const REVALIDATE_SECONDS = 3600;
-
 /** Thrown when the backend URL is missing, to separate a deployment
  * misconfiguration from an ordinary request failure in build logs. */
 class ApiConfigError extends Error {}
@@ -62,9 +60,7 @@ function toWritingDetail(post: PostDetail): Writing {
 }
 
 export async function getPosts(): Promise<Writing[]> {
-  const res = await fetch(`${apiBase()}/posts`, {
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
+  const res = await fetch(`${apiBase()}/posts`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`Failed to fetch posts: ${res.status}`);
   }
@@ -75,7 +71,7 @@ export async function getPosts(): Promise<Writing[]> {
 
 export async function getPost(slug: string): Promise<Writing | undefined> {
   const res = await fetch(`${apiBase()}/posts/${encodeURIComponent(slug)}`, {
-    next: { revalidate: REVALIDATE_SECONDS },
+    cache: "no-store",
   });
 
   if (res.status === 404) {

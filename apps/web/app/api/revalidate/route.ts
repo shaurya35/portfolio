@@ -16,19 +16,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // getPosts/getPost fetch with cache: "no-store" (apps/web/lib/api.ts), so
+  // /writing, /writing/[slug], and / are fully dynamic — nothing to
+  // invalidate here. These calls are harmless no-ops kept in case any part
+  // of the route tree reintroduces cached data later.
   revalidatePath("/writing");
   revalidatePath("/writing/[slug]", "page");
   revalidatePath("/");
-
-  // revalidatePath only marks the cache stale — the actual re-render happens
-  // on the next request to that path. Warm it here, inside this handler, so
-  // the page is already fresh by the time this responds instead of waiting
-  // on whichever visitor happens to hit it next.
-  const origin = request.nextUrl.origin;
-  await Promise.allSettled([
-    fetch(`${origin}/writing`, { cache: "no-store" }),
-    fetch(`${origin}/`, { cache: "no-store" }),
-  ]);
 
   return NextResponse.json({ revalidated: true }, { status: 200 });
 }
