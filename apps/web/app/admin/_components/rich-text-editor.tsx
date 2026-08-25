@@ -411,7 +411,10 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
     () => [
       StarterKit.configure({ codeBlock: false }),
       CodeBlock.configure({ lowlight }),
-      Link.configure({ openOnClick: false }),
+      // markdownLinks: typing or pasting `[text](url)` converts to a real
+      // link. Off by default in the extension, which otherwise leaves that
+      // syntax as literal text.
+      Link.configure({ openOnClick: false, markdownLinks: true }),
       Image,
       Placeholder.configure({ placeholder: "Write your post…" }),
       Markdown.configure({ html: false }),
