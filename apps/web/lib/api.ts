@@ -1,5 +1,13 @@
 import type { Writing, WritingSource, WritingStatus } from "@/types/writing";
 
+// Short enough that a broken on-demand webhook self-heals in under a minute
+// (worst case we hit was days of staleness), long enough that normal traffic
+// mostly hits the cache instead of the Rust backend's slow cold start.
+// revalidateTag("posts") in app/api/revalidate/route.ts is what makes a
+// publish show up immediately in the common case; this is just the backstop.
+const POSTS_REVALIDATE_SECONDS = 60;
+const POSTS_TAG = "posts";
+
 /** Thrown when the backend URL is missing, to separate a deployment
  * misconfiguration from an ordinary request failure in build logs. */
 class ApiConfigError extends Error {}
@@ -60,7 +68,9 @@ function toWritingDetail(post: PostDetail): Writing {
 }
 
 export async function getPosts(): Promise<Writing[]> {
-  const res = await fetch(`${apiBase()}/posts`, { cache: "no-store" });
+  const res = await fetch(`${apiBase()}/posts`, {
+    next: { revalidate: POSTS_REVALIDATE_SECONDS, tags: [POSTS_TAG] },
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch posts: ${res.status}`);
   }
@@ -71,7 +81,7 @@ export async function getPosts(): Promise<Writing[]> {
 
 export async function getPost(slug: string): Promise<Writing | undefined> {
   const res = await fetch(`${apiBase()}/posts/${encodeURIComponent(slug)}`, {
-    cache: "no-store",
+    next: { revalidate: POSTS_REVALIDATE_SECONDS, tags: [POSTS_TAG] },
   });
 
   if (res.status === 404) {

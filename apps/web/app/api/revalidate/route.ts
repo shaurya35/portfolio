@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 
 function isAuthorized(provided: string | null, expected: string | undefined): boolean {
@@ -16,13 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // getPosts/getPost fetch with cache: "no-store" (apps/web/lib/api.ts), so
-  // /writing, /writing/[slug], and / are fully dynamic — nothing to
-  // invalidate here. These calls are harmless no-ops kept in case any part
-  // of the route tree reintroduces cached data later.
-  revalidatePath("/writing");
-  revalidatePath("/writing/[slug]", "page");
-  revalidatePath("/");
+  // getPosts/getPost both tag their fetch "posts" (apps/web/lib/api.ts), so
+  // this one call invalidates /, /writing, and every /writing/[slug] that
+  // depends on that data — no need to enumerate paths. { expire: 0 } is
+  // Next 16's way of saying "fully invalidate now" (the pre-16 default);
+  // omitting the profile only emits a stale-while-revalidate warning.
+  revalidateTag("posts", { expire: 0 });
 
   return NextResponse.json({ revalidated: true }, { status: 200 });
 }
