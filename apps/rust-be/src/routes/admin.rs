@@ -112,7 +112,7 @@ pub(super) async fn create(
         .into_admin()
         .map_err(|err| AppError::Internal(format!("malformed post row: {}", err.slug)))?;
 
-    revalidate::trigger(&state.config);
+    revalidate::trigger(&state.config).await;
 
     Ok((StatusCode::CREATED, Json(post)))
 }
@@ -164,7 +164,7 @@ pub(super) async fn update(
         .into_admin()
         .map_err(|err| AppError::Internal(format!("malformed post row: {}", err.slug)))?;
 
-    revalidate::trigger(&state.config);
+    revalidate::trigger(&state.config).await;
 
     Ok(Json(post))
 }
@@ -182,7 +182,7 @@ pub(super) async fn delete(
         return Err(AppError::NotFound);
     }
 
-    revalidate::trigger(&state.config);
+    revalidate::trigger(&state.config).await;
 
     Ok(StatusCode::NO_CONTENT)
 }
