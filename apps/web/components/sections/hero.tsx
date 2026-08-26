@@ -9,7 +9,7 @@ export function Hero() {
     <section className="py-4">
       <div className="flex items-center gap-4">
         <Image
-          src="/Self.jpeg"
+          src="/image.png"
           alt={site.name}
           width={96}
           height={96}
