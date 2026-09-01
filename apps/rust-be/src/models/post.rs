@@ -104,6 +104,11 @@ pub struct PostRow {
     pub source: String,
     pub url: Option<String>,
     pub markdown: Option<String>,
+    /// Rendered once at write time (see `admin.rs` create/update) instead of
+    /// re-run through the markdown/syntax-highlighting pipeline on every
+    /// read. `None` only for a native row written before this column
+    /// existed and not yet backfilled (see `backfill_post_html` in main.rs).
+    pub html: Option<String>,
     pub status: String,
     pub published_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -181,9 +186,16 @@ impl PostRow {
         let body = match self.source.as_str() {
             "x" => self.url.map(|url| PostBody::X { url }),
             "medium" => self.url.map(|url| PostBody::Medium { url }),
-            "native" => self.markdown.as_deref().map(|markdown| PostBody::Native {
-                html: crate::markdown::render(markdown),
-            }),
+            // Prefer the cached column; fall back to rendering on the fly
+            // for a native row whose html hasn't been backfilled yet, so a
+            // request never 500s on a not-yet-migrated row.
+            "native" => match (self.html, self.markdown.as_deref()) {
+                (Some(html), _) => Some(PostBody::Native { html }),
+                (None, Some(markdown)) => Some(PostBody::Native {
+                    html: crate::markdown::render(markdown),
+                }),
+                (None, None) => None,
+            },
             _ => None,
         }
         .ok_or_else(|| MalformedRow {

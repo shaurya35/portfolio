@@ -41,6 +41,11 @@ async fn main() {
         std::process::exit(1);
     });
 
+    backfill_post_html(&pool).await.unwrap_or_else(|err| {
+        eprintln!("post html backfill failed: {err}");
+        std::process::exit(1);
+    });
+
     let daily_salt = Arc::new(RwLock::new(state::generate_salt()));
 
     tokio::spawn({
@@ -88,4 +93,27 @@ async fn main() {
         eprintln!("server error: {err}");
         std::process::exit(1);
     });
+}
+
+/// One-time backfill for the `html` column added after native posts already
+/// existed. Runs the `WHERE html IS NULL` query on every boot, but that's a
+/// cheap no-op once every native row has been rendered — cold-start cost
+/// this pays once, not the per-request cost it replaces.
+async fn backfill_post_html(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    let rows =
+        sqlx::query!(r#"SELECT id, markdown FROM posts WHERE source = 'native' AND html IS NULL"#)
+            .fetch_all(pool)
+            .await?;
+
+    for row in rows {
+        let Some(markdown) = row.markdown else {
+            continue;
+        };
+        let html = markdown::render(&markdown);
+        sqlx::query!("UPDATE posts SET html = $1 WHERE id = $2", html, row.id)
+            .execute(pool)
+            .await?;
+    }
+
+    Ok(())
 }

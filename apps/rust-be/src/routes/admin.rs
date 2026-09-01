@@ -51,7 +51,7 @@ pub(super) async fn list(
     let rows = sqlx::query_as!(
         PostRow,
         r#"
-        SELECT id, slug, title, description, category, source, url, markdown, status,
+        SELECT id, slug, title, description, category, source, url, markdown, html, status,
                published_at, created_at, updated_at
         FROM posts
         ORDER BY created_at DESC
@@ -79,13 +79,15 @@ pub(super) async fn create(
     let Json(new_post) = body?;
     let status = new_post.status.as_str();
     let (source, url, markdown) = new_post.source.into_parts();
+    // Rendered here, once, instead of on every future GET /posts/:slug.
+    let html = markdown.as_deref().map(crate::markdown::render);
 
     let row = sqlx::query_as!(
         PostRow,
         r#"
-        INSERT INTO posts (slug, title, description, category, source, url, markdown, status, published_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $8 = 'published' THEN now() ELSE NULL END)
-        RETURNING id, slug, title, description, category, source, url, markdown, status,
+        INSERT INTO posts (slug, title, description, category, source, url, markdown, html, status, published_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CASE WHEN $9 = 'published' THEN now() ELSE NULL END)
+        RETURNING id, slug, title, description, category, source, url, markdown, html, status,
                   published_at, created_at, updated_at
         "#,
         new_post.slug,
@@ -95,6 +97,7 @@ pub(super) async fn create(
         source,
         url,
         markdown,
+        html,
         status,
     )
     .fetch_one(&state.pool)
@@ -126,6 +129,8 @@ pub(super) async fn update(
     let Json(update) = body?;
     let status = update.status.as_str();
     let (source, url, markdown) = update.source.into_parts();
+    // Rendered here, once, instead of on every future GET /posts/:slug.
+    let html = markdown.as_deref().map(crate::markdown::render);
 
     let row = sqlx::query_as!(
         PostRow,
@@ -137,14 +142,15 @@ pub(super) async fn update(
             source = $4,
             url = $5,
             markdown = $6,
-            status = $7,
+            html = $7,
+            status = $8,
             published_at = CASE
-                WHEN $7 = 'published' AND published_at IS NULL THEN now()
+                WHEN $8 = 'published' AND published_at IS NULL THEN now()
                 ELSE published_at
             END,
             updated_at = now()
-        WHERE id = $8
-        RETURNING id, slug, title, description, category, source, url, markdown, status,
+        WHERE id = $9
+        RETURNING id, slug, title, description, category, source, url, markdown, html, status,
                   published_at, created_at, updated_at
         "#,
         update.title,
@@ -153,6 +159,7 @@ pub(super) async fn update(
         source,
         url,
         markdown,
+        html,
         status,
         id,
     )

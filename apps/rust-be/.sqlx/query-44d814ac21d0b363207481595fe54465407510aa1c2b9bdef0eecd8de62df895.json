@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, slug, title, description, category, source, url, markdown, status,\n               published_at, created_at, updated_at\n        FROM posts\n        ORDER BY created_at DESC\n        ",
+  "query": "\n        SELECT id, slug, title, description, category, source, url, markdown, html, status,\n               published_at, created_at, updated_at\n        FROM posts\n        WHERE status = 'published'\n        ORDER BY published_at DESC\n        ",
   "describe": {
     "columns": [
       {
@@ -93,6 +93,17 @@
       },
       {
         "ordinal": 8,
+        "name": "html",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "html"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
         "name": "status",
         "type_info": "Text",
         "origin": {
@@ -103,7 +114,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "published_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -114,7 +125,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "created_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -125,7 +136,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 12,
         "name": "updated_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -148,11 +159,12 @@
       false,
       true,
       true,
+      true,
       false,
       true,
       false,
       false
     ]
   },
-  "hash": "9135069abce06c5771e674afdef1a43df19627da55625670b8bfe052f6e8f9ab"
+  "hash": "44d814ac21d0b363207481595fe54465407510aa1c2b9bdef0eecd8de62df895"
 }

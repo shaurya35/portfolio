@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        UPDATE posts SET\n            title = $1,\n            description = $2,\n            category = $3,\n            source = $4,\n            url = $5,\n            markdown = $6,\n            status = $7,\n            published_at = CASE\n                WHEN $7 = 'published' AND published_at IS NULL THEN now()\n                ELSE published_at\n            END,\n            updated_at = now()\n        WHERE id = $8\n        RETURNING id, slug, title, description, category, source, url, markdown, status,\n                  published_at, created_at, updated_at\n        ",
+  "query": "\n        INSERT INTO posts (slug, title, description, category, source, url, markdown, html, status, published_at)\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CASE WHEN $9 = 'published' THEN now() ELSE NULL END)\n        RETURNING id, slug, title, description, category, source, url, markdown, html, status,\n                  published_at, created_at, updated_at\n        ",
   "describe": {
     "columns": [
       {
@@ -93,6 +93,17 @@
       },
       {
         "ordinal": 8,
+        "name": "html",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "html"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
         "name": "status",
         "type_info": "Text",
         "origin": {
@@ -103,7 +114,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "published_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -114,7 +125,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "created_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -125,7 +136,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 12,
         "name": "updated_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -145,7 +156,8 @@
         "Text",
         "Text",
         "Text",
-        "Int8"
+        "Text",
+        "Text"
       ]
     },
     "nullable": [
@@ -157,11 +169,12 @@
       false,
       true,
       true,
+      true,
       false,
       true,
       false,
       false
     ]
   },
-  "hash": "7b31465c2215de9aa6aa501796ddcbc76ce0875609e0bd811c4bd62b59c7aa8f"
+  "hash": "2ac524c7a16958a0acb298440e08e8bb20bd7667874e147137b9efc1888a7c58"
 }

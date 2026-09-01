@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        INSERT INTO posts (slug, title, description, category, source, url, markdown, status, published_at)\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $8 = 'published' THEN now() ELSE NULL END)\n        RETURNING id, slug, title, description, category, source, url, markdown, status,\n                  published_at, created_at, updated_at\n        ",
+  "query": "\n        SELECT id, slug, title, description, category, source, url, markdown, html, status,\n               published_at, created_at, updated_at\n        FROM posts\n        ORDER BY created_at DESC\n        ",
   "describe": {
     "columns": [
       {
@@ -93,6 +93,17 @@
       },
       {
         "ordinal": 8,
+        "name": "html",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "html"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
         "name": "status",
         "type_info": "Text",
         "origin": {
@@ -103,7 +114,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 10,
         "name": "published_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -114,7 +125,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 11,
         "name": "created_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -125,7 +136,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 12,
         "name": "updated_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -137,16 +148,7 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Text",
-        "Text",
-        "Text",
-        "Text",
-        "Text",
-        "Text",
-        "Text",
-        "Text"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
@@ -157,11 +159,12 @@
       false,
       true,
       true,
+      true,
       false,
       true,
       false,
       false
     ]
   },
-  "hash": "6ea40f91edd22d48a87c009dfcf7465d827e7f2e4dca7af64619f29cf27f39b8"
+  "hash": "b4ab2c61637bf201d5567d32823e9b814240aedd5bb411b0a0282f41aaa15e20"
 }

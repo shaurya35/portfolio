@@ -9,7 +9,7 @@ pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<PostSummary>
     let rows = sqlx::query_as!(
         PostRow,
         r#"
-        SELECT id, slug, title, description, category, source, url, markdown, status,
+        SELECT id, slug, title, description, category, source, url, markdown, html, status,
                published_at, created_at, updated_at
         FROM posts
         WHERE status = 'published'
@@ -37,7 +37,7 @@ pub async fn get(
     let row = sqlx::query_as!(
         PostRow,
         r#"
-        SELECT id, slug, title, description, category, source, url, markdown, status,
+        SELECT id, slug, title, description, category, source, url, markdown, html, status,
                published_at, created_at, updated_at
         FROM posts
         WHERE status = 'published' AND slug = $1
