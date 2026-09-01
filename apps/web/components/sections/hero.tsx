@@ -3,6 +3,7 @@ import { site } from "@/content/site";
 import { socials } from "@/content/socials";
 import { socialIcons } from "@/components/icons";
 import { CopyEmail } from "@/components/copy-email";
+import { TrackedLink } from "@/components/tracked-link";
 
 export function Hero() {
   return (
@@ -38,8 +39,9 @@ export function Hero() {
         {socials.map((social) => {
           const Icon = socialIcons[social.icon];
           return (
-            <a
+            <TrackedLink
               key={social.name}
+              trackTarget={`social:${social.name.toLowerCase()}`}
               href={social.href}
               target="_blank"
               rel="noreferrer"
@@ -49,7 +51,7 @@ export function Hero() {
               <span className="size-6">
                 <Icon className="size-5" />
               </span>
-            </a>
+            </TrackedLink>
           );
         })}
       </div>

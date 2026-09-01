@@ -101,3 +101,21 @@ export function updatePost(id: number, input: PostUpdateInput): Promise<AdminPos
 export function deletePost(id: number): Promise<void> {
   return request<void>(`/admin/posts/${id}`, { method: "DELETE" });
 }
+
+export type DailyCount = { date: string; pageviews: number; visitors: number };
+export type PathCount = { path: string; count: number };
+export type TargetCount = { target: string; count: number };
+export type ReferrerCount = { referrer: string; count: number };
+export type CountryCount = { country: string; count: number };
+
+export type Stats = {
+  daily: DailyCount[];
+  top_paths: PathCount[];
+  top_targets: TargetCount[];
+  top_referrers: ReferrerCount[];
+  countries: CountryCount[];
+};
+
+export function getStats(days: number): Promise<Stats> {
+  return request<Stats>(`/admin/stats?days=${days}`);
+}

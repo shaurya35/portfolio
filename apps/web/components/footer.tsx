@@ -2,6 +2,7 @@ import Link from "next/link";
 import { site } from "@/content/site";
 import { socials } from "@/content/socials";
 import { socialIcons } from "@/components/icons";
+import { TrackedLink } from "@/components/tracked-link";
 
 const navigate = [
   { label: "Home", href: "/" },
@@ -41,8 +42,9 @@ export function Footer() {
               {socials.map((social) => {
                 const Icon = socialIcons[social.icon];
                 return (
-                  <a
+                  <TrackedLink
                     key={social.name}
+                    trackTarget={`social:${social.name.toLowerCase()}`}
                     href={social.href}
                     target="_blank"
                     rel="noreferrer"
@@ -50,7 +52,7 @@ export function Footer() {
                     className="flex size-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     <Icon className="size-5" />
-                  </a>
+                  </TrackedLink>
                 );
               })}
             </div>

@@ -2,6 +2,7 @@ import { site } from "@/content/site";
 import { socials } from "@/content/socials";
 import { SectionHeading } from "@/components/section-heading";
 import { MailIcon, CalendarIcon } from "@/components/icons";
+import { TrackedLink } from "@/components/tracked-link";
 
 export function Contact() {
   const emailHref = socials.find((social) => social.name === "Email")!.href;
@@ -14,7 +15,8 @@ export function Contact() {
       </p>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <a
+        <TrackedLink
+          trackTarget="contact:cal"
           href={site.calHref}
           target="_blank"
           rel="noreferrer"
@@ -22,8 +24,9 @@ export function Contact() {
         >
           <CalendarIcon className="size-4" />
           Book a call
-        </a>
-        <a
+        </TrackedLink>
+        <TrackedLink
+          trackTarget="contact:email"
           href={emailHref}
           target="_blank"
           rel="noreferrer"
@@ -31,7 +34,7 @@ export function Contact() {
         >
           <MailIcon className="size-4" />
           Email me
-        </a>
+        </TrackedLink>
       </div>
     </section>
   );

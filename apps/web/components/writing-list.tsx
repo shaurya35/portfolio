@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Writing } from "@/types/writing";
 import { formatDate } from "@/lib/format";
+import { trackClick } from "@/lib/track-click";
 import {
   CalendarIcon,
   ArrowRightIcon,
@@ -70,6 +71,7 @@ export function WritingList({ writings }: { writings: Writing[] }) {
                   target="_blank"
                   rel="noreferrer"
                   className="block"
+                  onClick={() => trackClick(`post:${post.slug}`)}
                 >
                   {content}
                 </a>
