@@ -40,7 +40,7 @@ impl FromRequestParts<AppState> for Visitor {
         Ok(Visitor {
             visitor_hash: visitor_hash(ip, user_agent, &salt),
             referrer: header_value(&parts.headers, "referer").map(str::to_owned),
-            country: header_value(&parts.headers, "fly-client-country").map(str::to_owned),
+            country: client_country(&parts.headers).map(str::to_owned),
             device: device(&lowered_user_agent),
             is_bot: is_bot(&lowered_user_agent),
         })
@@ -52,6 +52,10 @@ fn header_value<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
 }
 
 pub(crate) fn client_ip(headers: &HeaderMap) -> &str {
+    // Vercel doesn't set fly-client-ip (leftover from the pre-Vercel Fly.io
+    // deployment) — kept only in case this ever runs behind Fly again.
+    // x-forwarded-for is what Vercel actually sends, and every request has
+    // hit that fallback in production since the migration.
     if let Some(value) = header_value(headers, "fly-client-ip") {
         return value;
     }
@@ -62,6 +66,15 @@ pub(crate) fn client_ip(headers: &HeaderMap) -> &str {
         .filter(|value| !value.is_empty());
 
     forwarded_last.unwrap_or(UNKNOWN_IP_PLACEHOLDER)
+}
+
+/// Same story as `client_ip`: `fly-client-country` never fires on Vercel.
+/// `x-vercel-ip-country` is what Vercel actually sets. Every event recorded
+/// since the migration has had `country = NULL` as a result — this wasn't a
+/// low-sample-size gap, the header it read has never existed on this host.
+fn client_country(headers: &HeaderMap) -> Option<&str> {
+    header_value(headers, "x-vercel-ip-country")
+        .or_else(|| header_value(headers, "fly-client-country"))
 }
 
 fn device(lowered_user_agent: &str) -> &'static str {
