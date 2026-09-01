@@ -12,4 +12,5 @@ export type Writing = {
   href?: string;
   html?: string;
   status?: WritingStatus;
+  updatedAt?: string;
 };

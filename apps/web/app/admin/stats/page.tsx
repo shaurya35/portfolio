@@ -22,6 +22,21 @@ export default function AdminStatsPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  // True for both the initial load and every range switch — switching
+  // 7d/30d/90d used to leave the previous range's numbers on screen with no
+  // indication a new request was even in flight.
+  const [loading, setLoading] = useState(true);
+
+  const handleRangeChange = (range: (typeof RANGES)[number]) => {
+    if (range === days) return;
+
+    // This runs in the click event, before the fetch effect starts, so the
+    // current data is visibly stale instead of silently looking up to date.
+    setLoading(true);
+    setError(null);
+    setHoveredDate(null);
+    setDays(range);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -36,6 +51,8 @@ export default function AdminStatsPage() {
         if (cancelled) return;
         onError(err, "Failed to load stats.");
         setError("Failed to load stats.");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
 
@@ -64,8 +81,14 @@ export default function AdminStatsPage() {
     <section className="py-8">
       <div className="pb-8">
         <h1 className="text-2xl font-bold">Stats</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
           Traffic over the last {days} days.
+          {loading ? (
+            <span
+              aria-label="Loading"
+              className="size-3 shrink-0 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"
+            />
+          ) : null}
         </p>
       </div>
 
@@ -74,7 +97,8 @@ export default function AdminStatsPage() {
           <button
             key={range}
             type="button"
-            onClick={() => setDays(range)}
+            onClick={() => handleRangeChange(range)}
+            aria-pressed={days === range}
             className={`cursor-pointer rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               days === range
                 ? "bg-foreground text-background"
@@ -93,7 +117,9 @@ export default function AdminStatsPage() {
       ) : null}
 
       {stats !== null ? (
-        <div className="flex flex-col gap-10">
+        <div
+          className={`flex flex-col gap-10 transition-opacity ${loading ? "opacity-50" : "opacity-100"}`}
+        >
           <div className="flex gap-8">
             <div>
               <p className="text-2xl font-bold tabular-nums">

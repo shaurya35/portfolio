@@ -148,6 +148,7 @@ impl PostRow {
             body,
             status,
             published_at: self.published_at,
+            updated_at: self.updated_at,
         })
     }
 
@@ -227,6 +228,7 @@ pub struct PostSummary {
     pub body: PostSummaryBody,
     pub status: PostStatus,
     pub published_at: Option<DateTime<Utc>>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize)]

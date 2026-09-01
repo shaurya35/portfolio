@@ -39,6 +39,32 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/writing/${post.slug}`,
+    },
+    openGraph: {
+      type: "article",
+      url: `/writing/${post.slug}`,
+      title: post.title,
+      description: post.description,
+      publishedTime: post.date,
+      modifiedTime: post.updatedAt ?? post.date,
+      authors: ["Shaurya Jha"],
+      images: [
+        {
+          url: `/writing/${post.slug}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      images: [`/writing/${post.slug}/opengraph-image`],
+    },
   };
 }
 

@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
 };
 
-const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("theme")||"light";document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");if(!t){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
 
 const personJsonLd = {
   "@context": "https://schema.org",

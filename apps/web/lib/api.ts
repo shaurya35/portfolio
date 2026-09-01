@@ -38,6 +38,7 @@ type PostSummary = {
   url?: string;
   status: WritingStatus;
   published_at: string;
+  updated_at: string;
 };
 
 type PostDetail = PostSummary & {
@@ -56,6 +57,7 @@ function toWriting(post: PostSummary): Writing {
     category: post.category,
     source: post.source,
     href: post.url,
+    updatedAt: post.updated_at,
   };
 }
 

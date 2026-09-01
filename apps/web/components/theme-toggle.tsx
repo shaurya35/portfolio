@@ -16,8 +16,8 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label="Toggle theme"
-      className="flex size-8 cursor-pointer items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground"
+      aria-label="Toggle color theme"
+      className="flex size-11 cursor-pointer items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

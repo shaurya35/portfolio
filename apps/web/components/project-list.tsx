@@ -87,6 +87,7 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors ${
         active
           ? "bg-foreground text-background"

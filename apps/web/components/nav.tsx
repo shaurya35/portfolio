@@ -50,12 +50,16 @@ export function Nav() {
     >
       <nav className="flex items-center gap-6 text-sm text-muted-foreground">
         {links.map((link) => {
-          const active = isAdminArea && pathname.startsWith(link.href);
+          const active =
+            link.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(link.href);
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`transition-colors hover:text-foreground ${active ? "text-foreground" : ""}`}
+              aria-current={active ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center transition-colors hover:text-foreground ${active ? "text-foreground" : ""}`}
             >
               {link.label}
             </Link>
