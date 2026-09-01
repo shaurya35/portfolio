@@ -44,15 +44,6 @@ async fn main() {
         std::process::exit(1);
     });
 
-    // Non-fatal: this is a caching optimization, not a correctness
-    // requirement — `into_detail` (models/post.rs) already falls back to
-    // rendering on the fly for any row this doesn't reach. Exiting the
-    // whole process over it would take every route down (auth, x/medium
-    // posts, admin CRUD) for what's at most a transient slow read.
-    if let Err(err) = backfill_post_html(&pool).await {
-        tracing::error!("post html backfill failed, continuing without it: {err}");
-    }
-
     let session_epoch = load_session_epoch(&pool).await.unwrap_or_else(|err| {
         eprintln!("session epoch load failed: {err}");
         std::process::exit(1);
@@ -122,25 +113,3 @@ async fn load_session_epoch(pool: &sqlx::PgPool) -> Result<u64, sqlx::Error> {
     Ok(row.epoch as u64)
 }
 
-/// One-time backfill for the `html` column added after native posts already
-/// existed. Runs the `WHERE html IS NULL` query on every boot, but that's a
-/// cheap no-op once every native row has been rendered — cold-start cost
-/// this pays once, not the per-request cost it replaces.
-async fn backfill_post_html(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
-    let rows =
-        sqlx::query!(r#"SELECT id, markdown FROM posts WHERE source = 'native' AND html IS NULL"#)
-            .fetch_all(pool)
-            .await?;
-
-    for row in rows {
-        let Some(markdown) = row.markdown else {
-            continue;
-        };
-        let html = markdown::render(&markdown);
-        sqlx::query!("UPDATE posts SET html = $1 WHERE id = $2", html, row.id)
-            .execute(pool)
-            .await?;
-    }
-
-    Ok(())
-}
