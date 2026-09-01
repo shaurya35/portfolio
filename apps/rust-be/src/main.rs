@@ -53,11 +53,6 @@ async fn main() {
         tracing::error!("post html backfill failed, continuing without it: {err}");
     }
 
-    let session_epoch = load_session_epoch(&pool).await.unwrap_or_else(|err| {
-        eprintln!("session epoch load failed: {err}");
-        std::process::exit(1);
-    });
-
     let daily_salt = Arc::new(RwLock::new(state::generate_salt()));
 
     tokio::spawn({
@@ -79,7 +74,6 @@ async fn main() {
         pool,
         config,
         daily_salt,
-        session_epoch: Arc::new(RwLock::new(session_epoch)),
         login_limiter: Arc::new(RateLimiter::new(5, Duration::from_secs(5 * 60))),
         event_limiter: Arc::new(RateLimiter::new(120, Duration::from_secs(60))),
     };
@@ -107,19 +101,6 @@ async fn main() {
         eprintln!("server error: {err}");
         std::process::exit(1);
     });
-}
-
-/// Loads the persisted session epoch (see `session_epoch.rs` migration) so
-/// logout invalidation survives a restart. `state::session_epoch` still
-/// holds the live value in memory afterwards — every admin request checks
-/// against that in-memory copy, not the database, so this pays one query
-/// at boot rather than a DB round trip per request.
-async fn load_session_epoch(pool: &sqlx::PgPool) -> Result<u64, sqlx::Error> {
-    let row = sqlx::query!("SELECT epoch FROM session_epoch WHERE singleton = true")
-        .fetch_one(pool)
-        .await?;
-
-    Ok(row.epoch as u64)
 }
 
 /// One-time backfill for the `html` column added after native posts already

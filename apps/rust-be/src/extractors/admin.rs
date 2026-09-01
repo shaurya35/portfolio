@@ -6,7 +6,11 @@ use crate::auth::ADMIN_COOKIE;
 use crate::error::AppError;
 use crate::state::AppState;
 
-pub struct Admin;
+pub struct Admin {
+    /// Only `logout` reads this (to know which row to revoke) — every other
+    /// handler takes `_admin: Admin` and ignores it.
+    pub session_id: String,
+}
 
 impl FromRequestParts<AppState> for Admin {
     type Rejection = AppError;
@@ -20,17 +24,23 @@ impl FromRequestParts<AppState> for Admin {
             Err(infallible) => match infallible {},
         };
 
-        let cookie_epoch = jar
+        let session_id = jar
             .get(ADMIN_COOKIE)
-            .and_then(|cookie| cookie.value().parse::<u64>().ok())
+            .map(|cookie| cookie.value().to_owned())
             .ok_or(AppError::Unauthorized)?;
 
-        let current_epoch = *state.session_epoch.read().await;
+        // A DB read per admin request — the cost of per-session revocation
+        // instead of the old free in-memory epoch compare. Accepted
+        // deliberately: admin traffic is low (single operator), and there's
+        // no correct way to invalidate one session without the ability to
+        // check for exactly one session.
+        let row = sqlx::query!("SELECT revoked_at FROM sessions WHERE id = $1", session_id)
+            .fetch_optional(&state.pool)
+            .await?;
 
-        if cookie_epoch == current_epoch {
-            Ok(Admin)
-        } else {
-            Err(AppError::Unauthorized)
+        match row {
+            Some(row) if row.revoked_at.is_none() => Ok(Admin { session_id }),
+            _ => Err(AppError::Unauthorized),
         }
     }
 }

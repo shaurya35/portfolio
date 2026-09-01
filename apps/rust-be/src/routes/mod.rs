@@ -1,5 +1,5 @@
 use axum::Router;
-use axum::routing::{get, patch, post};
+use axum::routing::{get, post};
 
 mod admin;
 mod events;
@@ -16,10 +16,15 @@ pub fn router() -> Router<AppState> {
         .route("/posts/{slug}", get(posts::get))
         .route("/admin/login", post(admin::login))
         .route("/admin/logout", post(admin::logout))
-        .route("/admin/posts", get(admin::list).post(admin::create))
+        .route(
+            "/admin/posts",
+            get(admin::list)
+                .post(admin::create)
+                .delete(admin::bulk_delete),
+        )
         .route(
             "/admin/posts/{id}",
-            patch(admin::update).delete(admin::delete),
+            get(admin::get).patch(admin::update).delete(admin::delete),
         )
         .route("/admin/stats", get(stats::stats))
         .route("/e", post(events::create))

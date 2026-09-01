@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, slug, title, description, category, source, url, markdown, html, status,\n               published_at, created_at, updated_at\n        FROM posts\n        ORDER BY created_at DESC\n        ",
+  "query": "\n        SELECT id, slug, title, description, category, source, url, markdown, html, status,\n               published_at, created_at, updated_at\n        FROM posts\n        WHERE id = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -148,7 +148,9 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Int8"
+      ]
     },
     "nullable": [
       false,
@@ -166,5 +168,5 @@
       false
     ]
   },
-  "hash": "b4ab2c61637bf201d5567d32823e9b814240aedd5bb411b0a0282f41aaa15e20"
+  "hash": "b8b4c30d3754d625330938ffa30b8d5a449a5469a728b5ec2f807b96265d6c49"
 }
