@@ -33,6 +33,16 @@ export const metadata: Metadata = {
     template: "%s · Shaurya Jha",
   },
   description: SITE_DESCRIPTION,
+  alternates: {
+    types: {
+      "application/rss+xml": [
+        {
+          url: "/writing/feed.xml",
+          title: "Shaurya Jha Writing",
+        },
+      ],
+    },
+  },
   openGraph: {
     type: "website",
     url: SITE_URL,

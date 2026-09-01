@@ -45,6 +45,7 @@ export async function generateMetadata({
     openGraph: {
       type: "article",
       url: `/writing/${post.slug}`,
+      siteName: "Shaurya Jha",
       title: post.title,
       description: post.description,
       publishedTime: post.date,
@@ -61,6 +62,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
+      creator: "@_shaurya35",
       title: post.title,
       description: post.description,
       images: [`/writing/${post.slug}/opengraph-image`],

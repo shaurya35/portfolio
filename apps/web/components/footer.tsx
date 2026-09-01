@@ -8,6 +8,7 @@ const navigate = [
   { label: "Home", href: "/" },
   { label: "Projects", href: "/projects" },
   { label: "Writing", href: "/writing" },
+  { label: "RSS", href: "/writing/feed.xml", document: true },
 ];
 
 export function Footer() {
@@ -22,15 +23,20 @@ export function Footer() {
               Navigate
             </p>
             <nav className="flex flex-wrap gap-x-6 gap-y-1">
-              {navigate.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navigate.map((item) => {
+                const className =
+                  "text-sm text-muted-foreground transition-colors hover:text-foreground";
+
+                return item.document ? (
+                  <a key={item.href} href={item.href} className={className}>
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link key={item.href} href={item.href} className={className}>
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 
