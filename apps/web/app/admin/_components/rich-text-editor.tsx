@@ -422,7 +422,16 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
       // markdownLinks: typing or pasting `[text](url)` converts to a real
       // link. Off by default in the extension, which otherwise leaves that
       // syntax as literal text.
-      Link.configure({ openOnClick: false, markdownLinks: true }),
+      //
+      // inclusive: false — the extension ties this to `autolink` (true by
+      // default), which makes the link mark "inclusive": typing right after
+      // a link (even a space) inherits the mark instead of exiting it.
+      // Override it back to false so a space (or any character) typed after
+      // a link ends the hyperlink instead of extending it.
+      Link.extend({ inclusive: () => false }).configure({
+        openOnClick: false,
+        markdownLinks: true,
+      }),
       Image,
       Placeholder.configure({ placeholder: "Write your post…" }),
       Markdown.configure({ html: false }),
