@@ -7,11 +7,21 @@ import { useAdminError } from "@/app/admin/_lib/use-admin-error";
 
 const RANGES = [7, 30, 90] as const;
 
+/** "2026-09-01" (the backend's `date(created_at)` serialization) -> "Sep 1". */
+function formatDayLabel(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function AdminStatsPage() {
   const onError = useAdminError();
   const [days, setDays] = useState<(typeof RANGES)[number]>(30);
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,16 +116,30 @@ export default function AdminStatsPage() {
             {stats.daily.length === 0 ? (
               <p className="text-sm text-muted-foreground">No data yet.</p>
             ) : (
-              <div className="flex h-24 items-end gap-0.5">
+              <div className="flex h-24 items-stretch gap-0.5">
                 {[...stats.daily].reverse().map((day) => (
                   <div
                     key={day.date}
-                    title={`${day.date}: ${day.pageviews} pageviews, ${day.visitors} visitors`}
-                    className="flex-1 rounded-t-sm bg-foreground/15 transition-colors hover:bg-foreground/30"
-                    style={{
-                      height: `${Math.max(4, (day.pageviews / maxDailyPageviews) * 100)}%`,
-                    }}
-                  />
+                    onMouseEnter={() => setHoveredDate(day.date)}
+                    onMouseLeave={() => setHoveredDate(null)}
+                    className="relative flex-1"
+                  >
+                    {hoveredDate === day.date ? (
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-background px-2 py-1 text-xs shadow-sm">
+                        <p className="font-medium">{formatDayLabel(day.date)}</p>
+                        <p className="text-muted-foreground">
+                          {day.pageviews.toLocaleString()} views ·{" "}
+                          {day.visitors.toLocaleString()} visitors
+                        </p>
+                      </div>
+                    ) : null}
+                    <div
+                      className="absolute inset-x-0 bottom-0 rounded-t-sm bg-foreground/15 transition-colors hover:bg-foreground/30"
+                      style={{
+                        height: `${Math.max(4, (day.pageviews / maxDailyPageviews) * 100)}%`,
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             )}
