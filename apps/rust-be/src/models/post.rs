@@ -95,7 +95,6 @@ pub struct AdminPost {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(sqlx::FromRow)]
 pub struct PostRow {
     pub id: i64,
     pub slug: String,
@@ -114,15 +113,6 @@ pub struct PostRow {
     pub published_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-}
-
-/// Response shape for the paginated admin list endpoint — `total` is the
-/// count across every page (post the filters, pre the limit/offset), so the
-/// frontend can render "page X of Y" without a second round trip.
-#[derive(Debug, Serialize)]
-pub struct AdminPostList {
-    pub posts: Vec<AdminPost>,
-    pub total: i64,
 }
 
 #[derive(Debug)]

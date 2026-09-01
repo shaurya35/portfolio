@@ -112,4 +112,3 @@ async fn load_session_epoch(pool: &sqlx::PgPool) -> Result<u64, sqlx::Error> {
 
     Ok(row.epoch as u64)
 }
-

@@ -1,16 +1,15 @@
 use axum::Json;
-use axum::extract::rejection::{JsonRejection, QueryRejection};
-use axum::extract::{Path, Query, State};
+use axum::extract::rejection::JsonRejection;
+use axum::extract::{Path, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum_extra::extract::cookie::SignedCookieJar;
-use serde::{Deserialize, Serialize};
-use sqlx::{Postgres, QueryBuilder};
+use serde::Deserialize;
 
 use crate::auth;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
 use crate::extractors::visitor::client_ip;
-use crate::models::post::{AdminPost, AdminPostList, NewPost, PostRow, UpdatePost};
+use crate::models::post::{AdminPost, NewPost, PostRow, UpdatePost};
 use crate::revalidate;
 use crate::state::AppState;
 
@@ -71,73 +70,21 @@ pub(super) async fn logout(
     Ok((jar, StatusCode::OK))
 }
 
-#[derive(Debug, Deserialize)]
-pub(super) struct ListQuery {
-    q: Option<String>,
-    status: Option<String>,
-    category: Option<String>,
-    limit: Option<i64>,
-    offset: Option<i64>,
-}
-
-/// Appends the same WHERE clauses to both the count query and the page
-/// query, so the two can never drift on what "matches the filter" means.
-fn push_filters(
-    qb: &mut QueryBuilder<Postgres>,
-    q: Option<String>,
-    status: Option<String>,
-    category: Option<String>,
-) {
-    if let Some(q) = q {
-        qb.push(" AND title ILIKE ").push_bind(format!("%{q}%"));
-    }
-    if let Some(status) = status {
-        qb.push(" AND status = ").push_bind(status);
-    }
-    if let Some(category) = category {
-        // Substring + case-insensitive, same as the title search — category
-        // is free text with no enum/casing enforcement, so this reads as a
-        // live filter as the admin types rather than requiring the exact
-        // stored spelling.
-        qb.push(" AND category ILIKE ")
-            .push_bind(format!("%{category}%"));
-    }
-}
-
 pub(super) async fn list(
     State(state): State<AppState>,
     _admin: Admin,
-    query: Result<Query<ListQuery>, QueryRejection>,
-) -> Result<Json<AdminPostList>, AppError> {
-    let Query(params) = query?;
-    let limit = params.limit.unwrap_or(20).clamp(1, 100);
-    let offset = params.offset.unwrap_or(0).max(0);
-    let q = params.q.filter(|s| !s.trim().is_empty());
-    let status = params.status.filter(|s| !s.trim().is_empty());
-    let category = params.category.filter(|s| !s.trim().is_empty());
-
-    let mut count_qb: QueryBuilder<Postgres> =
-        QueryBuilder::new("SELECT count(*) FROM posts WHERE true");
-    push_filters(&mut count_qb, q.clone(), status.clone(), category.clone());
-
-    let mut list_qb: QueryBuilder<Postgres> = QueryBuilder::new(
-        "SELECT id, slug, title, description, category, source, url, markdown, html, status, \
-         published_at, created_at, updated_at FROM posts WHERE true",
-    );
-    push_filters(&mut list_qb, q, status, category);
-    list_qb.push(" ORDER BY created_at DESC LIMIT ");
-    list_qb.push_bind(limit);
-    list_qb.push(" OFFSET ");
-    list_qb.push_bind(offset);
-
-    // Two independent queries, sent concurrently instead of one after the
-    // other — on a cross-region DB connection (Neon is in ap-southeast-1;
-    // this function isn't) each round trip is real latency, and there's no
-    // reason the count has to wait for the page to come back first.
-    let (total, rows): (i64, Vec<PostRow>) = tokio::try_join!(
-        count_qb.build_query_scalar().fetch_one(&state.pool),
-        list_qb.build_query_as().fetch_all(&state.pool),
-    )?;
+) -> Result<Json<Vec<AdminPost>>, AppError> {
+    let rows = sqlx::query_as!(
+        PostRow,
+        r#"
+        SELECT id, slug, title, description, category, source, url, markdown, html, status,
+               published_at, created_at, updated_at
+        FROM posts
+        ORDER BY created_at DESC
+        "#
+    )
+    .fetch_all(&state.pool)
+    .await?;
 
     let posts = rows
         .into_iter()
@@ -147,7 +94,7 @@ pub(super) async fn list(
         })
         .collect::<Result<Vec<_>, _>>()?;
 
-    Ok(Json(AdminPostList { posts, total }))
+    Ok(Json(posts))
 }
 
 pub(super) async fn get(
@@ -295,38 +242,4 @@ pub(super) async fn delete(
     revalidate::trigger(&state.config).await;
 
     Ok(StatusCode::NO_CONTENT)
-}
-
-#[derive(Debug, Deserialize)]
-pub(super) struct BulkDeleteRequest {
-    ids: Vec<i64>,
-}
-
-#[derive(Debug, Serialize)]
-pub(super) struct BulkDeleteResponse {
-    deleted: i64,
-}
-
-pub(super) async fn bulk_delete(
-    State(state): State<AppState>,
-    _admin: Admin,
-    body: Result<Json<BulkDeleteRequest>, JsonRejection>,
-) -> Result<Json<BulkDeleteResponse>, AppError> {
-    let Json(payload) = body?;
-
-    if payload.ids.is_empty() {
-        return Err(AppError::BadRequest("no post ids provided".to_owned()));
-    }
-
-    let result = sqlx::query!("DELETE FROM posts WHERE id = ANY($1)", &payload.ids)
-        .execute(&state.pool)
-        .await?;
-
-    // One trigger for the whole batch, not one per post — the ISR
-    // revalidate webhook doesn't need to run N times to pick up N deletions.
-    revalidate::trigger(&state.config).await;
-
-    Ok(Json(BulkDeleteResponse {
-        deleted: result.rows_affected() as i64,
-    }))
 }

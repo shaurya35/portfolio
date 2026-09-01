@@ -16,12 +16,7 @@ pub fn router() -> Router<AppState> {
         .route("/posts/{slug}", get(posts::get))
         .route("/admin/login", post(admin::login))
         .route("/admin/logout", post(admin::logout))
-        .route(
-            "/admin/posts",
-            get(admin::list)
-                .post(admin::create)
-                .delete(admin::bulk_delete),
-        )
+        .route("/admin/posts", get(admin::list).post(admin::create))
         .route(
             "/admin/posts/{id}",
             get(admin::get).patch(admin::update).delete(admin::delete),
