@@ -26,8 +26,8 @@ export default function NewPostPage() {
   };
 
   return (
-    <section className="py-8">
-      <div className="pb-8">
+    <section className="pb-8">
+      <div className="py-8">
         <h1 className="text-2xl font-bold">New post</h1>
       </div>
 

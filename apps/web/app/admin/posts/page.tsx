@@ -9,7 +9,6 @@ import {
   deletePost,
   getPosts,
 } from "@/app/admin/_lib/api";
-import { LogoutButton } from "@/app/admin/_components/logout-button";
 import { StatusBadge } from "@/app/admin/_components/status-badge";
 import { TrashIcon } from "@/components/icons";
 
@@ -64,29 +63,20 @@ export default function AdminPostsPage() {
   };
 
   return (
-    <section className="py-8">
-      <div className="flex items-center justify-between pb-8">
+    <section className="pb-8">
+      <div className="flex items-center justify-between py-8">
         <div>
           <h1 className="text-2xl font-bold">Posts</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage drafts and published posts.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/stats"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Stats
-          </Link>
-          <Link
-            href="/admin/posts/new"
-            className="rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
-          >
-            New post
-          </Link>
-          <LogoutButton />
-        </div>
+        <Link
+          href="/admin/posts/new"
+          className="rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+        >
+          New post
+        </Link>
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

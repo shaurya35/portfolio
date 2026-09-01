@@ -70,8 +70,8 @@ export function EditPostView({ id }: { id: string }) {
   }
 
   return (
-    <section className="py-8">
-      <div className="pb-8">
+    <section className="pb-8">
+      <div className="py-8">
         <h1 className="text-2xl font-bold">Edit post</h1>
       </div>
 

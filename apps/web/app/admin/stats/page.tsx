@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ApiRequestError, getStats, type Stats } from "@/app/admin/_lib/api";
-import { LogoutButton } from "@/app/admin/_components/logout-button";
 import { StatList } from "@/app/admin/_components/stat-list";
 
 const RANGES = [7, 30, 90] as const;
@@ -56,23 +54,12 @@ export default function AdminStatsPage() {
   );
 
   return (
-    <section className="py-8">
-      <div className="flex items-center justify-between pb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Stats</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Traffic over the last {days} days.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/posts"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Posts
-          </Link>
-          <LogoutButton />
-        </div>
+    <section className="pb-8">
+      <div className="py-8">
+        <h1 className="text-2xl font-bold">Stats</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Traffic over the last {days} days.
+        </p>
       </div>
 
       <div className="mb-6 flex gap-1">
