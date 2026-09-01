@@ -5,17 +5,20 @@ mod error;
 mod extractors;
 mod markdown;
 mod models;
+mod ratelimit;
 mod revalidate;
 mod routes;
 mod state;
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::http::{HeaderValue, Method, header};
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
 
 use crate::config::Config;
+use crate::ratelimit::RateLimiter;
 use crate::state::AppState;
 
 #[tokio::main]
@@ -41,8 +44,17 @@ async fn main() {
         std::process::exit(1);
     });
 
-    backfill_post_html(&pool).await.unwrap_or_else(|err| {
-        eprintln!("post html backfill failed: {err}");
+    // Non-fatal: this is a caching optimization, not a correctness
+    // requirement — `into_detail` (models/post.rs) already falls back to
+    // rendering on the fly for any row this doesn't reach. Exiting the
+    // whole process over it would take every route down (auth, x/medium
+    // posts, admin CRUD) for what's at most a transient slow read.
+    if let Err(err) = backfill_post_html(&pool).await {
+        tracing::error!("post html backfill failed, continuing without it: {err}");
+    }
+
+    let session_epoch = load_session_epoch(&pool).await.unwrap_or_else(|err| {
+        eprintln!("session epoch load failed: {err}");
         std::process::exit(1);
     });
 
@@ -67,7 +79,9 @@ async fn main() {
         pool,
         config,
         daily_salt,
-        session_epoch: Arc::new(RwLock::new(0)),
+        session_epoch: Arc::new(RwLock::new(session_epoch)),
+        login_limiter: Arc::new(RateLimiter::new(5, Duration::from_secs(5 * 60))),
+        event_limiter: Arc::new(RateLimiter::new(120, Duration::from_secs(60))),
     };
 
     let cors = CorsLayer::new()
@@ -93,6 +107,19 @@ async fn main() {
         eprintln!("server error: {err}");
         std::process::exit(1);
     });
+}
+
+/// Loads the persisted session epoch (see `session_epoch.rs` migration) so
+/// logout invalidation survives a restart. `state::session_epoch` still
+/// holds the live value in memory afterwards — every admin request checks
+/// against that in-memory copy, not the database, so this pays one query
+/// at boot rather than a DB round trip per request.
+async fn load_session_epoch(pool: &sqlx::PgPool) -> Result<u64, sqlx::Error> {
+    let row = sqlx::query!("SELECT epoch FROM session_epoch WHERE singleton = true")
+        .fetch_one(pool)
+        .await?;
+
+    Ok(row.epoch as u64)
 }
 
 /// One-time backfill for the `html` column added after native posts already

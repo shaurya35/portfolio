@@ -1,13 +1,14 @@
 use axum::Json;
 use axum::extract::rejection::JsonRejection;
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, StatusCode};
 use axum_extra::extract::cookie::SignedCookieJar;
 use serde::Deserialize;
 
 use crate::auth;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
+use crate::extractors::visitor::client_ip;
 use crate::models::post::{AdminPost, NewPost, PostRow, UpdatePost};
 use crate::revalidate;
 use crate::state::AppState;
@@ -17,11 +18,26 @@ pub(super) struct LoginRequest {
     password: String,
 }
 
+/// Rendered here, once, at write time — instead of on every future
+/// GET /posts/:slug. Shared by create and update so the two write paths
+/// can't drift on how native HTML gets derived.
+fn render_native_html(markdown: Option<&str>) -> Option<String> {
+    markdown.map(crate::markdown::render)
+}
+
 pub(super) async fn login(
     State(state): State<AppState>,
+    headers: HeaderMap,
     jar: SignedCookieJar,
     body: Result<Json<LoginRequest>, JsonRejection>,
 ) -> Result<(SignedCookieJar, StatusCode), AppError> {
+    // Checked before touching the password at all, so a rate-limited caller
+    // doesn't also cost us an argon2 hash (the operation this endpoint
+    // exists to make expensive in the first place).
+    if !state.login_limiter.check(client_ip(&headers)) {
+        return Err(AppError::TooManyRequests);
+    }
+
     let Json(payload) = body?;
 
     if !auth::verify_password(&state.config.admin_password_hash, &payload.password)? {
@@ -38,10 +54,20 @@ pub(super) async fn logout(
     State(state): State<AppState>,
     _admin: Admin,
     jar: SignedCookieJar,
-) -> (SignedCookieJar, StatusCode) {
-    *state.session_epoch.write().await += 1;
+) -> Result<(SignedCookieJar, StatusCode), AppError> {
+    // Persisted first so the invalidation survives a restart (see the
+    // session_epoch migration); the in-memory copy is set from what the
+    // database actually returned rather than a local `+= 1`, so a crash
+    // between the two can't leave them disagreeing.
+    let row = sqlx::query!(
+        "UPDATE session_epoch SET epoch = epoch + 1 WHERE singleton = true RETURNING epoch"
+    )
+    .fetch_one(&state.pool)
+    .await?;
+    *state.session_epoch.write().await = row.epoch as u64;
+
     let jar = jar.remove(auth::logout_cookie(&state.config.cookie_domain));
-    (jar, StatusCode::OK)
+    Ok((jar, StatusCode::OK))
 }
 
 pub(super) async fn list(
@@ -79,8 +105,7 @@ pub(super) async fn create(
     let Json(new_post) = body?;
     let status = new_post.status.as_str();
     let (source, url, markdown) = new_post.source.into_parts();
-    // Rendered here, once, instead of on every future GET /posts/:slug.
-    let html = markdown.as_deref().map(crate::markdown::render);
+    let html = render_native_html(markdown.as_deref());
 
     let row = sqlx::query_as!(
         PostRow,
@@ -129,8 +154,7 @@ pub(super) async fn update(
     let Json(update) = body?;
     let status = update.status.as_str();
     let (source, url, markdown) = update.source.into_parts();
-    // Rendered here, once, instead of on every future GET /posts/:slug.
-    let html = markdown.as_deref().map(crate::markdown::render);
+    let html = render_native_html(markdown.as_deref());
 
     let row = sqlx::query_as!(
         PostRow,

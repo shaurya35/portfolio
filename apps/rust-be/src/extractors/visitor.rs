@@ -51,7 +51,7 @@ fn header_value<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
     headers.get(name).and_then(|value| value.to_str().ok())
 }
 
-fn client_ip(headers: &HeaderMap) -> &str {
+pub(crate) fn client_ip(headers: &HeaderMap) -> &str {
     if let Some(value) = header_value(headers, "fly-client-ip") {
         return value;
     }

@@ -16,6 +16,9 @@ pub enum AppError {
     #[error("unauthorized")]
     Unauthorized,
 
+    #[error("too many requests")]
+    TooManyRequests,
+
     #[error("conflict: {0}")]
     Conflict(String),
 
@@ -53,6 +56,10 @@ impl IntoResponse for AppError {
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::NotFound => (StatusCode::NOT_FOUND, "not found".to_owned()),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized".to_owned()),
+            AppError::TooManyRequests => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "too many requests".to_owned(),
+            ),
             AppError::Conflict(msg) => (StatusCode::CONFLICT, msg),
             AppError::Internal(_) | AppError::Database(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
