@@ -1,14 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ApiRequestError, getStats, type Stats } from "@/app/admin/_lib/api";
+import { getStats, type Stats } from "@/app/admin/_lib/api";
 import { StatList } from "@/app/admin/_components/stat-list";
+import { useAdminError } from "@/app/admin/_lib/use-admin-error";
 
 const RANGES = [7, 30, 90] as const;
 
 export default function AdminStatsPage() {
-  const router = useRouter();
+  const onError = useAdminError();
   const [days, setDays] = useState<(typeof RANGES)[number]>(30);
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,10 +24,7 @@ export default function AdminStatsPage() {
         setError(null);
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiRequestError && err.status === 401) {
-          router.replace("/admin");
-          return;
-        }
+        onError(err, "Failed to load stats.");
         setError("Failed to load stats.");
       }
     })();
@@ -35,7 +32,7 @@ export default function AdminStatsPage() {
     return () => {
       cancelled = true;
     };
-  }, [days, router]);
+  }, [days, onError]);
 
   const totals = useMemo(() => {
     if (!stats) return null;

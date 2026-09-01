@@ -42,6 +42,10 @@ export class ApiRequestError extends Error {
   }
 }
 
+export function isUnauthorized(err: unknown): err is ApiRequestError {
+  return err instanceof ApiRequestError && err.status === 401;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -80,8 +84,33 @@ export function logout(): Promise<void> {
   return request<void>("/admin/logout", { method: "POST" });
 }
 
-export function getPosts(): Promise<AdminPost[]> {
-  return request<AdminPost[]>("/admin/posts");
+export type AdminPostListParams = {
+  q?: string;
+  status?: PostStatus;
+  category?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type AdminPostList = {
+  posts: AdminPost[];
+  total: number;
+};
+
+export function getPosts(params: AdminPostListParams = {}): Promise<AdminPostList> {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.status) search.set("status", params.status);
+  if (params.category) search.set("category", params.category);
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.offset !== undefined) search.set("offset", String(params.offset));
+
+  const query = search.toString();
+  return request<AdminPostList>(`/admin/posts${query ? `?${query}` : ""}`);
+}
+
+export function getPost(id: number): Promise<AdminPost> {
+  return request<AdminPost>(`/admin/posts/${id}`);
 }
 
 export function createPost(input: NewPostInput): Promise<AdminPost> {
@@ -100,6 +129,13 @@ export function updatePost(id: number, input: PostUpdateInput): Promise<AdminPos
 
 export function deletePost(id: number): Promise<void> {
   return request<void>(`/admin/posts/${id}`, { method: "DELETE" });
+}
+
+export function bulkDeletePosts(ids: number[]): Promise<{ deleted: number }> {
+  return request<{ deleted: number }>("/admin/posts", {
+    method: "DELETE",
+    body: JSON.stringify({ ids }),
+  });
 }
 
 export type DailyCount = { date: string; pageviews: number; visitors: number };

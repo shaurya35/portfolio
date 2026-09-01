@@ -23,6 +23,8 @@ export default function AdminLoginPage() {
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 401) {
         setError("Incorrect password.");
+      } else if (err instanceof ApiRequestError && err.status === 429) {
+        setError("Too many attempts. Wait a few minutes and try again.");
       } else {
         setError("Something went wrong. Please try again.");
       }

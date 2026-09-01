@@ -2,16 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { type AdminPost, ApiRequestError, getPosts, updatePost } from "@/app/admin/_lib/api";
+import { type AdminPost, ApiRequestError, getPost, isUnauthorized, updatePost } from "@/app/admin/_lib/api";
 import { PostForm, type PostFormValues } from "@/app/admin/_components/post-form";
+import { useAdminError } from "@/app/admin/_lib/use-admin-error";
+import { useToast } from "@/app/admin/_components/toast";
 
 export function EditPostView({ id }: { id: string }) {
   const router = useRouter();
+  const onError = useAdminError();
+  const { show } = useToast();
   const postId = Number(id);
   const validId = Number.isInteger(postId);
 
-  const [post, setPost] = useState<AdminPost | null | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [post, setPost] = useState<AdminPost | undefined>(undefined);
+  const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!validId) {
@@ -22,23 +27,24 @@ export function EditPostView({ id }: { id: string }) {
 
     (async () => {
       try {
-        const posts = await getPosts();
+        const result = await getPost(postId);
         if (cancelled) return;
-        setPost(posts.find((p) => p.id === postId) ?? null);
+        setPost(result);
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiRequestError && err.status === 401) {
-          router.replace("/admin");
+        if (err instanceof ApiRequestError && err.status === 404) {
+          setNotFound(true);
           return;
         }
-        setError("Failed to load post.");
+        onError(err, "Failed to load post.");
+        setLoadError("Failed to load post.");
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [postId, validId, router]);
+  }, [postId, validId, onError]);
 
   const handleSubmit = async (values: PostFormValues) => {
     const body =
@@ -46,23 +52,32 @@ export function EditPostView({ id }: { id: string }) {
         ? { source: "native" as const, markdown: values.markdown }
         : { source: values.source, url: values.url };
 
-    await updatePost(postId, {
-      title: values.title,
-      description: values.description,
-      category: values.category,
-      status: values.status,
-      ...body,
-    });
+    try {
+      await updatePost(postId, {
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        status: values.status,
+        ...body,
+      });
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        onError(err, "Failed to save changes.");
+        return;
+      }
+      throw err;
+    }
 
+    show("Changes saved.");
     router.push("/admin/posts");
   };
 
-  if (!validId || post === null) {
+  if (!validId || notFound) {
     return <p className="py-8 text-sm text-muted-foreground">Post not found.</p>;
   }
 
-  if (error) {
-    return <p className="py-8 text-sm text-destructive">{error}</p>;
+  if (loadError) {
+    return <p className="py-8 text-sm text-destructive">{loadError}</p>;
   }
 
   if (post === undefined) {

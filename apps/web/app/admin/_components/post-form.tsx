@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import type { AdminPost, PostSource, PostStatus } from "@/app/admin/_lib/api";
 import { ApiRequestError } from "@/app/admin/_lib/api";
 import { RichTextEditor } from "@/app/admin/_components/rich-text-editor";
+import { useUnsavedChanges } from "@/app/admin/_lib/use-unsaved-changes";
 
 export type PostFormValues = {
   slug: string;
@@ -47,6 +49,7 @@ function slugify(value: string): string {
 }
 
 export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
+  const router = useRouter();
   const isEditing = initial !== undefined;
 
   const [slug, setSlug] = useState(initial?.slug ?? "");
@@ -68,6 +71,55 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
   const [slugError, setSlugError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const { setDirty, confirmNavigation } = useUnsavedChanges();
+
+  // Compared against the values the form started with (empty for a new
+  // post, `initial` for an edit) so navigating away only prompts when
+  // something has actually changed — not on every render.
+  const baseline = useRef({
+    slug: initial?.slug ?? "",
+    title: initial?.title ?? "",
+    description: initial?.description ?? "",
+    category: initial?.category ?? "",
+    source: initial?.source ?? "native",
+    url: initial?.url ?? "",
+    markdown: initial?.markdown ?? "",
+    status: initial?.status ?? "draft",
+  });
+  const dirtyRef = useRef(false);
+
+  useEffect(() => {
+    const current = { slug, title, description, category, source, url, markdown, status };
+    const dirty = (Object.keys(current) as (keyof typeof current)[]).some(
+      (key) => current[key] !== baseline.current[key],
+    );
+    dirtyRef.current = dirty;
+    setDirty(dirty);
+  }, [slug, title, description, category, source, url, markdown, status, setDirty]);
+
+  // Clears the flag when the form itself goes away (route change after a
+  // successful save, or unmount for any other reason) so a stale "dirty"
+  // from this form doesn't block navigation on whatever page comes next.
+  useEffect(() => {
+    return () => setDirty(false);
+  }, [setDirty]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (dirtyRef.current) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  const handleCancel = () => {
+    if (!confirmNavigation()) return;
+    setDirty(false);
+    router.push("/admin/posts");
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,6 +144,7 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
         markdown,
         status,
       });
+      setDirty(false);
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 409) {
         setSlugError(err.message);
@@ -268,13 +321,22 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={saving}
-        className="cursor-pointer self-start rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {saving ? "Saving…" : submitLabel}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="cursor-pointer self-start rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {saving ? "Saving…" : submitLabel}
+        </button>
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="cursor-pointer self-start rounded-md border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }
