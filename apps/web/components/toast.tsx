@@ -20,9 +20,8 @@ const AUTO_DISMISS_MS = 3500;
 
 /**
  * A minimal toast stack — no library. Two variants, auto-dismiss, no
- * promise-chaining or rich content, matching how little the rest of admin's
- * UI ever needed: create/save/delete/logout previously navigated away with
- * no confirmation at all.
+ * promise-chaining or rich content. Mounted once in the root layout so it's
+ * available everywhere, though in practice only the admin pages use it.
  */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);

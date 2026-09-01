@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AdminPost, PostSource, PostStatus } from "@/app/admin/_lib/api";
 import { ApiRequestError } from "@/app/admin/_lib/api";
 import { RichTextEditor } from "@/app/admin/_components/rich-text-editor";
-import { useUnsavedChanges } from "@/app/admin/_lib/use-unsaved-changes";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 
 export type PostFormValues = {
   slug: string;

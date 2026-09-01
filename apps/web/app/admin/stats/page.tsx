@@ -51,8 +51,8 @@ export default function AdminStatsPage() {
   );
 
   return (
-    <section className="pb-8">
-      <div className="py-8">
+    <section className="py-8">
+      <div className="pb-8">
         <h1 className="text-2xl font-bold">Stats</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Traffic over the last {days} days.

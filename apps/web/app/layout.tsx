@@ -6,6 +6,8 @@ import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { InlineScript } from "@/components/inline-script";
 import { Beacon } from "@/components/beacon";
+import { ToastProvider } from "@/components/toast";
+import { UnsavedChangesProvider } from "@/lib/use-unsaved-changes";
 import { site } from "@/content/site";
 import { socials } from "@/content/socials";
 import "./globals.css";
@@ -79,8 +81,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <Nav />
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4">{children}</main>
+        <ToastProvider>
+          <UnsavedChangesProvider>
+            <Nav />
+            <main className="mx-auto w-full max-w-2xl flex-1 px-4">{children}</main>
+          </UnsavedChangesProvider>
+        </ToastProvider>
         <Footer />
         <Analytics />
         <SpeedInsights />

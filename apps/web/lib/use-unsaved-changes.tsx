@@ -15,10 +15,12 @@ const CONFIRM_MESSAGE = "You have unsaved changes. Leave without saving?";
 
 /**
  * One interception point for "is it safe to leave the current post form"
- * instead of rewriting every nav target (tab links, logout) to know about
- * PostForm directly. `PostForm` registers its own dirty state here as the
- * user types; `AdminLayout` reads it back from the single click handler that
- * wraps its whole nav row.
+ * instead of teaching every nav target (the top nav's links, the logout
+ * button) about `PostForm` directly. `PostForm` registers its own dirty
+ * state here as the user types; `Nav` reads it back from the single click
+ * handler that wraps its admin links. Mounted in the root layout (not
+ * scoped to `/admin`) because `Nav` renders on every page and needs the
+ * hook to always be available.
  */
 export function UnsavedChangesProvider({ children }: { children: React.ReactNode }) {
   const dirtyRef = useRef(false);

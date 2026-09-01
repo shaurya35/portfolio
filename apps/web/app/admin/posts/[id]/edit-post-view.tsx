@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { type AdminPost, ApiRequestError, getPost, isUnauthorized, updatePost } from "@/app/admin/_lib/api";
 import { PostForm, type PostFormValues } from "@/app/admin/_components/post-form";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
-import { useToast } from "@/app/admin/_components/toast";
+import { useToast } from "@/components/toast";
 
 export function EditPostView({ id }: { id: string }) {
   const router = useRouter();
@@ -85,8 +85,8 @@ export function EditPostView({ id }: { id: string }) {
   }
 
   return (
-    <section className="pb-8">
-      <div className="py-8">
+    <section className="py-8">
+      <div className="pb-8">
         <h1 className="text-2xl font-bold">Edit post</h1>
       </div>
 

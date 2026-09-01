@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { ApiRequestError, isUnauthorized } from "@/app/admin/_lib/api";
-import { useToast } from "@/app/admin/_components/toast";
+import { useToast } from "@/components/toast";
 
 /**
  * Single place every admin page routes a failed request through, instead of
