@@ -12,7 +12,7 @@ use crate::extractors::admin::Admin;
 use crate::extractors::visitor::client_ip;
 use crate::models::post::{AdminPost, AdminPostList, NewPost, PostRow, UpdatePost};
 use crate::revalidate;
-use crate::state::{self, AppState};
+use crate::state::AppState;
 
 #[derive(Debug, Deserialize)]
 pub(super) struct LoginRequest {
@@ -45,32 +45,27 @@ pub(super) async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    let session_id = state::generate_session_id();
-    sqlx::query!("INSERT INTO sessions (id) VALUES ($1)", session_id)
-        .execute(&state.pool)
-        .await?;
-
-    let jar = jar.add(auth::session_cookie(
-        &session_id,
-        &state.config.cookie_domain,
-    ));
+    let epoch = *state.session_epoch.read().await;
+    let jar = jar.add(auth::session_cookie(epoch, &state.config.cookie_domain));
 
     Ok((jar, StatusCode::OK))
 }
 
 pub(super) async fn logout(
     State(state): State<AppState>,
-    admin: Admin,
+    _admin: Admin,
     jar: SignedCookieJar,
 ) -> Result<(SignedCookieJar, StatusCode), AppError> {
-    // Revokes only the calling session's row — logging out on one device no
-    // longer signs every device out (the old shared-epoch behavior).
-    sqlx::query!(
-        "UPDATE sessions SET revoked_at = now() WHERE id = $1",
-        admin.session_id
+    // Persisted first so the invalidation survives a restart (see the
+    // session_epoch migration); the in-memory copy is set from what the
+    // database actually returned rather than a local `+= 1`, so a crash
+    // between the two can't leave them disagreeing.
+    let row = sqlx::query!(
+        "UPDATE session_epoch SET epoch = epoch + 1 WHERE singleton = true RETURNING epoch"
     )
-    .execute(&state.pool)
+    .fetch_one(&state.pool)
     .await?;
+    *state.session_epoch.write().await = row.epoch as u64;
 
     let jar = jar.remove(auth::logout_cookie(&state.config.cookie_domain));
     Ok((jar, StatusCode::OK))
@@ -124,7 +119,6 @@ pub(super) async fn list(
     let mut count_qb: QueryBuilder<Postgres> =
         QueryBuilder::new("SELECT count(*) FROM posts WHERE true");
     push_filters(&mut count_qb, q.clone(), status.clone(), category.clone());
-    let total: i64 = count_qb.build_query_scalar().fetch_one(&state.pool).await?;
 
     let mut list_qb: QueryBuilder<Postgres> = QueryBuilder::new(
         "SELECT id, slug, title, description, category, source, url, markdown, html, status, \
@@ -136,7 +130,14 @@ pub(super) async fn list(
     list_qb.push(" OFFSET ");
     list_qb.push_bind(offset);
 
-    let rows: Vec<PostRow> = list_qb.build_query_as().fetch_all(&state.pool).await?;
+    // Two independent queries, sent concurrently instead of one after the
+    // other — on a cross-region DB connection (Neon is in ap-southeast-1;
+    // this function isn't) each round trip is real latency, and there's no
+    // reason the count has to wait for the page to come back first.
+    let (total, rows): (i64, Vec<PostRow>) = tokio::try_join!(
+        count_qb.build_query_scalar().fetch_one(&state.pool),
+        list_qb.build_query_as().fetch_all(&state.pool),
+    )?;
 
     let posts = rows
         .into_iter()

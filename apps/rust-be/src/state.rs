@@ -14,6 +14,15 @@ pub struct AppState {
     pub pool: PgPool,
     pub config: Config,
     pub daily_salt: Arc<RwLock<String>>,
+    /// Reverted back to the shared in-memory epoch (see the
+    /// persist_session_epoch and add_sessions_table migrations for the full
+    /// history): per-session logout via a `sessions` table lookup added a DB
+    /// write to every login and a DB read to every single admin request,
+    /// which on this cross-region DB connection was real, user-visible
+    /// latency and a new failure path on login. Not worth it for a
+    /// single-admin site — logging out signs out every device again, but
+    /// authenticating a request costs nothing.
+    pub session_epoch: Arc<RwLock<u64>>,
     /// Keyed by client IP. 5 attempts / 5 minutes — tight, since a real
     /// admin mistyping a password a handful of times is the only legitimate
     /// case this could ever block.
@@ -23,19 +32,7 @@ pub struct AppState {
     pub event_limiter: Arc<RateLimiter>,
 }
 
-fn random_hex() -> String {
+pub fn generate_salt() -> String {
     let random_bytes: [u8; 32] = rand::random();
     blake3::hash(&random_bytes).to_hex().to_string()
-}
-
-pub fn generate_salt() -> String {
-    random_hex()
-}
-
-/// One per login, stored as the `sessions.id` row and mirrored into the
-/// signed admin cookie. Unguessable (32 random bytes, blake3-hashed) the
-/// same way the daily salt is — there's no reason for this one to use a
-/// different generator.
-pub fn generate_session_id() -> String {
-    random_hex()
 }

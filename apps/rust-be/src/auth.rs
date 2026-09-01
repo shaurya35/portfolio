@@ -17,8 +17,8 @@ pub fn verify_password(hash: &str, password: &str) -> Result<bool, AppError> {
         .is_ok())
 }
 
-pub fn session_cookie(session_id: &str, domain: &str) -> Cookie<'static> {
-    let mut cookie = Cookie::build((ADMIN_COOKIE, session_id.to_owned()))
+pub fn session_cookie(epoch: u64, domain: &str) -> Cookie<'static> {
+    let mut cookie = Cookie::build((ADMIN_COOKIE, epoch.to_string()))
         .path("/")
         .same_site(SameSite::None)
         .secure(true)
