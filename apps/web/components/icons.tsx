@@ -211,6 +211,25 @@ export function TrashIcon(props: IconProps) {
   );
 }
 
+export function LogoutIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      {...props}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 16l4-4-4-4M19 12H9" />
+    </svg>
+  );
+}
+
 export const socialIcons: Record<
   SocialIconName,
   (props: IconProps) => React.JSX.Element
