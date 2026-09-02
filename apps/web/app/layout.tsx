@@ -58,12 +58,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Stored value is a *preference*: "light" | "dark" | "system", anything else
-// (including nothing yet) is treated as "system". data-theme-pref carries
-// that preference for the toggle's own icon visibility; data-theme is always
-// resolved to light/dark and is what every color token in globals.css keys
-// off, so a "system" preference still paints instantly with no flash.
-const THEME_SCRIPT = `(function(){try{var p=localStorage.getItem("theme");if(p!=="light"&&p!=="dark"){p="system"}var t=p==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):p;document.documentElement.setAttribute("data-theme-pref",p);document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
+// No stored choice yet -> follow the OS preference. Once the toggle is
+// clicked, the explicit "light"/"dark" choice takes over from then on.
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");if(!t){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
 
 const personJsonLd = {
   "@context": "https://schema.org",
@@ -84,7 +81,6 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme="light"
-      data-theme-pref="system"
       suppressHydrationWarning
       className={`${hankenGrotesk.variable} ${sourceSerif4.variable} h-full antialiased`}
     >
