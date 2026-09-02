@@ -78,39 +78,26 @@ export function PreviewView({ id }: { id: string }) {
         Back to editor
       </Link>
 
-      <div className="mt-6 mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">
-          {post.status === "published" ? "Published" : "Draft"} preview
-        </span>
-        <span>— showing the last saved version, not unsaved edits.</span>
-        {post.status === "published" ? (
-          <Link
-            href={`/writing/${post.slug}`}
-            className="text-accent transition-colors hover:underline"
-          >
-            View live
-          </Link>
-        ) : null}
+      <div className="mt-6">
+        {post.source === "native" && post.html ? (
+          <PostArticle
+            post={{
+              title: post.title,
+              description: post.description,
+              category: post.category,
+              date: post.published_at ?? undefined,
+              html: post.html,
+            }}
+            showShare={false}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {post.source === "native"
+              ? "This post has no rendered content yet."
+              : `This post links out to ${post.url} — nothing to preview here.`}
+          </p>
+        )}
       </div>
-
-      {post.source === "native" && post.html ? (
-        <PostArticle
-          post={{
-            title: post.title,
-            description: post.description,
-            category: post.category,
-            date: post.published_at ?? undefined,
-            html: post.html,
-          }}
-          showShare={false}
-        />
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          {post.source === "native"
-            ? "This post has no rendered content yet."
-            : `This post links out to ${post.url} — nothing to preview here.`}
-        </p>
-      )}
     </section>
   );
 }
