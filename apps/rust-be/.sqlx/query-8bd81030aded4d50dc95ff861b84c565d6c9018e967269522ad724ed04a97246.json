@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                e.path as \"path!\",\n                (SELECT p.title FROM posts p WHERE '/writing/' || p.slug = e.path) as \"title?\",\n                count(*) as \"count!\"\n            FROM events e\n            WHERE e.kind = 'pageview' AND e.created_at >= now() - make_interval(days => $1)\n            GROUP BY e.path\n            ORDER BY count(*) DESC\n            LIMIT 10\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "path!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "events",
+            "name": "path"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "title?",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "8bd81030aded4d50dc95ff861b84c565d6c9018e967269522ad724ed04a97246"
+}

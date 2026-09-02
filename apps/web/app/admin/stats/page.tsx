@@ -177,7 +177,10 @@ export default function AdminStatsPage() {
                 Top pages
               </h2>
               <StatList
-                rows={stats.top_paths.map((p) => ({ label: p.path, count: p.count }))}
+                rows={stats.top_paths.map((p) => ({
+                  label: p.title ?? p.path,
+                  count: p.count,
+                }))}
                 emptyLabel="No pageviews yet."
               />
             </div>
@@ -202,6 +205,19 @@ export default function AdminStatsPage() {
               <StatList
                 rows={stats.countries.map((c) => ({ label: c.country, count: c.count }))}
                 emptyLabel="No country data yet."
+              />
+            </div>
+
+            <div>
+              <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+                Devices
+              </h2>
+              <StatList
+                rows={stats.devices.map((d) => ({
+                  label: d.device.charAt(0).toUpperCase() + d.device.slice(1),
+                  count: d.count,
+                }))}
+                emptyLabel="No device data yet."
               />
             </div>
 

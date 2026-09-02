@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT device as \"device!\", count(*) as \"count!\"\n            FROM events\n            WHERE kind = 'pageview' AND device IS NOT NULL AND created_at >= now() - make_interval(days => $1)\n            GROUP BY device\n            ORDER BY count(*) DESC\n            LIMIT 10\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "device!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "events",
+            "name": "device"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      true,
+      null
+    ]
+  },
+  "hash": "3a9510129bf4a120c44e4fa90ef54e32be75da06c34ca81da29203aea1b7927c"
+}

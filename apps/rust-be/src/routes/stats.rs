@@ -6,7 +6,7 @@ use serde::Deserialize;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
 use crate::models::stats::{
-    CountryCount, DailyCount, PathCount, ReferrerCount, Stats, TargetCount,
+    CountryCount, DailyCount, DeviceCount, PathCount, ReferrerCount, Stats, TargetCount,
 };
 use crate::state::AppState;
 
@@ -23,7 +23,7 @@ pub(super) async fn stats(
     let Query(params) = query?;
     let days = params.days.unwrap_or(30).clamp(1, 365);
 
-    let (daily, top_paths, top_targets, top_referrers, countries) = tokio::try_join!(
+    let (daily, top_paths, top_targets, top_referrers, countries, devices) = tokio::try_join!(
         sqlx::query_as!(
             DailyCount,
             r#"
@@ -39,10 +39,13 @@ pub(super) async fn stats(
         sqlx::query_as!(
             PathCount,
             r#"
-            SELECT path as "path!", count(*) as "count!"
-            FROM events
-            WHERE kind = 'pageview' AND created_at >= now() - make_interval(days => $1)
-            GROUP BY path
+            SELECT
+                e.path as "path!",
+                (SELECT p.title FROM posts p WHERE '/writing/' || p.slug = e.path) as "title?",
+                count(*) as "count!"
+            FROM events e
+            WHERE e.kind = 'pageview' AND e.created_at >= now() - make_interval(days => $1)
+            GROUP BY e.path
             ORDER BY count(*) DESC
             LIMIT 10
             "#,
@@ -88,6 +91,19 @@ pub(super) async fn stats(
             days
         )
         .fetch_all(&state.pool),
+        sqlx::query_as!(
+            DeviceCount,
+            r#"
+            SELECT device as "device!", count(*) as "count!"
+            FROM events
+            WHERE kind = 'pageview' AND device IS NOT NULL AND created_at >= now() - make_interval(days => $1)
+            GROUP BY device
+            ORDER BY count(*) DESC
+            LIMIT 10
+            "#,
+            days
+        )
+        .fetch_all(&state.pool),
     )?;
 
     Ok(Json(Stats {
@@ -96,5 +112,6 @@ pub(super) async fn stats(
         top_targets,
         top_referrers,
         countries,
+        devices,
     }))
 }

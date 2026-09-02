@@ -111,10 +111,11 @@ export function deletePost(id: number): Promise<void> {
 }
 
 export type DailyCount = { date: string; pageviews: number; visitors: number };
-export type PathCount = { path: string; count: number };
+export type PathCount = { path: string; title: string | null; count: number };
 export type TargetCount = { target: string; count: number };
 export type ReferrerCount = { referrer: string; count: number };
 export type CountryCount = { country: string; count: number };
+export type DeviceCount = { device: string; count: number };
 
 export type Stats = {
   daily: DailyCount[];
@@ -122,6 +123,7 @@ export type Stats = {
   top_targets: TargetCount[];
   top_referrers: ReferrerCount[];
   countries: CountryCount[];
+  devices: DeviceCount[];
 };
 
 export function getStats(days: number): Promise<Stats> {
