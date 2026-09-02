@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, getPosts } from "@/lib/api";
-import { formatDate, readingTime } from "@/lib/format";
-import { ArrowLeftIcon, CalendarIcon } from "@/components/icons";
-import { ShareButton } from "@/components/share-button";
+import { formatDate } from "@/lib/format";
+import { ArrowLeftIcon } from "@/components/icons";
 import { ReadingProgress } from "@/components/reading-progress";
-import { CodeBlockCopyButtons } from "@/components/code-copy-buttons";
+import { PostArticle } from "@/components/post-article";
 import type { Writing } from "@/types/writing";
 
 export async function generateStaticParams() {
@@ -101,30 +100,17 @@ export default async function WritingPostPage({
         Back to Writing
       </Link>
 
-      <div className="mt-6 border-b border-border pb-8">
-        <span className="inline-block rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
-          {post.category}
-        </span>
-        <h1 className="mt-4 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-          {post.title}
-        </h1>
-        <p className="mt-3 text-lg text-muted-foreground">{post.description}</p>
-        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarIcon className="size-4" />
-            {formatDate(post.date)}
-          </span>
-          <span>·</span>
-          <span>{readingTime(post.html)}</span>
-          <ShareButton />
-        </div>
+      <div className="mt-6">
+        <PostArticle
+          post={{
+            title: post.title,
+            description: post.description,
+            category: post.category,
+            date: post.date,
+            html: post.html,
+          }}
+        />
       </div>
-
-      <div
-        className="post-content pt-8"
-        dangerouslySetInnerHTML={{ __html: post.html }}
-      />
-      <CodeBlockCopyButtons />
 
       {relatedPosts.length > 0 ? (
         <div className="mt-16 border-t border-border pt-8">
