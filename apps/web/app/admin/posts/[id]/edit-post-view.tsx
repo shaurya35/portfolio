@@ -2,7 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { type AdminPost, ApiRequestError, getPost, isUnauthorized, updatePost } from "@/app/admin/_lib/api";
+import {
+  type AdminPostDetail,
+  ApiRequestError,
+  getPost,
+  isUnauthorized,
+  updatePost,
+} from "@/app/admin/_lib/api";
 import { PostForm, type PostFormValues } from "@/app/admin/_components/post-form";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
 import { useToast } from "@/components/toast";
@@ -14,7 +20,7 @@ export function EditPostView({ id }: { id: string }) {
   const postId = Number(id);
   const validId = Number.isInteger(postId);
 
-  const [post, setPost] = useState<AdminPost | undefined>(undefined);
+  const [post, setPost] = useState<AdminPostDetail | undefined>(undefined);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -90,7 +96,12 @@ export function EditPostView({ id }: { id: string }) {
         <h1 className="text-2xl font-bold">Edit post</h1>
       </div>
 
-      <PostForm initial={post} submitLabel="Save changes" onSubmit={handleSubmit} />
+      <PostForm
+        initial={post}
+        submitLabel="Save changes"
+        onSubmit={handleSubmit}
+        previewHref={`/admin/posts/${postId}/preview`}
+      />
     </section>
   );
 }

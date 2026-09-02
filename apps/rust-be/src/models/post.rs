@@ -95,6 +95,17 @@ pub struct AdminPost {
     pub updated_at: DateTime<Utc>,
 }
 
+/// `AdminPost` plus the cached rendered HTML, for the single-post admin read
+/// used by the preview screen. Kept separate from `AdminPost` (used by
+/// `list`) so the posts list response — trimmed for latency — doesn't grow a
+/// full HTML blob per row again.
+#[derive(Debug, Serialize)]
+pub struct AdminPostDetail {
+    #[serde(flatten)]
+    pub post: AdminPost,
+    pub html: Option<String>,
+}
+
 pub struct PostRow {
     pub id: i64,
     pub slug: String,
@@ -179,6 +190,16 @@ impl PostRow {
             created_at: self.created_at,
             updated_at: self.updated_at,
         })
+    }
+
+    /// Same shape as `into_admin`, plus the cached `html` column — already
+    /// rendered at write time (see `render_native_html` in `routes/admin.rs`)
+    /// for every post regardless of status, so a draft's preview needs no
+    /// rendering of its own, just returning a column `into_admin` drops.
+    pub fn into_admin_detail(mut self) -> Result<AdminPostDetail, MalformedRow> {
+        let html = self.html.take();
+        let post = self.into_admin()?;
+        Ok(AdminPostDetail { post, html })
     }
 
     pub fn into_detail(self) -> Result<Post, MalformedRow> {

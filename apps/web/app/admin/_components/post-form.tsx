@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { AdminPost, PostSource, PostStatus } from "@/app/admin/_lib/api";
@@ -22,6 +23,9 @@ type PostFormProps = {
   initial?: AdminPost;
   submitLabel: string;
   onSubmit: (values: PostFormValues) => Promise<void>;
+  /** Only known once a post has an id, so the new-post form has nothing to
+   * link to yet — omitted there. */
+  previewHref?: string;
 };
 
 const sources: { value: PostSource; label: string }[] = [
@@ -48,7 +52,7 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
+export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFormProps) {
   const router = useRouter();
   const isEditing = initial !== undefined;
 
@@ -119,6 +123,15 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
     if (!confirmNavigation()) return;
     setDirty(false);
     router.push("/admin/posts");
+  };
+
+  // A plain <Link> here would skip Nav's capture-phase guard — that only
+  // wraps the topbar — so this link checks the same confirmNavigation()
+  // itself before letting the click through.
+  const handlePreviewClick = (event: React.MouseEvent) => {
+    if (!confirmNavigation()) {
+      event.preventDefault();
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -336,6 +349,15 @@ export function PostForm({ initial, submitLabel, onSubmit }: PostFormProps) {
         >
           Cancel
         </button>
+        {previewHref ? (
+          <Link
+            href={previewHref}
+            onClick={handlePreviewClick}
+            className="inline-flex cursor-pointer items-center self-start rounded-md border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Preview
+          </Link>
+        ) : null}
       </div>
     </form>
   );

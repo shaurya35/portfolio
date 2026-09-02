@@ -9,7 +9,7 @@ use crate::auth;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
 use crate::extractors::visitor::client_ip;
-use crate::models::post::{AdminPost, NewPost, PostRow, UpdatePost};
+use crate::models::post::{AdminPost, AdminPostDetail, NewPost, PostRow, UpdatePost};
 use crate::revalidate;
 use crate::state::AppState;
 
@@ -101,7 +101,7 @@ pub(super) async fn get(
     State(state): State<AppState>,
     _admin: Admin,
     Path(id): Path<i64>,
-) -> Result<Json<AdminPost>, AppError> {
+) -> Result<Json<AdminPostDetail>, AppError> {
     let row = sqlx::query_as!(
         PostRow,
         r#"
@@ -117,7 +117,7 @@ pub(super) async fn get(
     .ok_or(AppError::NotFound)?;
 
     let post = row
-        .into_admin()
+        .into_admin_detail()
         .map_err(|err| AppError::Internal(format!("malformed post row: {}", err.slug)))?;
 
     Ok(Json(post))

@@ -18,6 +18,11 @@ export type AdminPost = {
   updated_at: string;
 };
 
+/** What `GET /admin/posts/{id}` returns — `AdminPost` plus the cached
+ * rendered HTML, for the preview screen. `html` is only present for a
+ * native post; `x`/`medium` posts have nothing to render. */
+export type AdminPostDetail = AdminPost & { html?: string | null };
+
 export type NewPostInput = {
   slug: string;
   title: string;
@@ -88,8 +93,8 @@ export function getPosts(): Promise<AdminPost[]> {
   return request<AdminPost[]>("/admin/posts");
 }
 
-export function getPost(id: number): Promise<AdminPost> {
-  return request<AdminPost>(`/admin/posts/${id}`);
+export function getPost(id: number): Promise<AdminPostDetail> {
+  return request<AdminPostDetail>(`/admin/posts/${id}`);
 }
 
 export function createPost(input: NewPostInput): Promise<AdminPost> {
