@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
           <label htmlFor="password" className="text-sm text-muted-foreground">
             Password
           </label>
-          <div className="flex items-center rounded-md border border-border bg-background focus-within:border-accent">
+          <div className="flex items-center rounded-md border border-border bg-background focus-within:border-foreground/40">
             <input
               id="password"
               type={showPassword ? "text" : "password"}
