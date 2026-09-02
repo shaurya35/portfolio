@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const STORAGE_KEY = "theme";
 
@@ -39,6 +39,27 @@ function apply(pref: ThemePref) {
  * same trick the two-state version used, just with a third icon.
  */
 export function ThemeToggle() {
+  // Label/title are kept in sync via direct DOM writes rather than React
+  // state — same reasoning as apply() below: reading the real client-side
+  // preference during render would mismatch the "system" default the server
+  // rendered, and setState in an effect just to reflect it back is a
+  // pointless extra render for two text attributes nothing else depends on.
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const syncLabel = (pref: ThemePref) => {
+    const button = buttonRef.current;
+    if (!button) return;
+    button.setAttribute("aria-label", `Theme: ${pref}. Click to switch to ${NEXT[pref]}.`);
+    button.title = LABEL[pref];
+  };
+
+  useEffect(() => {
+    const current =
+      (document.documentElement.getAttribute("data-theme-pref") as ThemePref | null) ??
+      "system";
+    syncLabel(current);
+  }, []);
+
   // While the preference is "system", follow the OS live instead of only
   // resolving it once at toggle-click or page-load time.
   useEffect(() => {
@@ -59,15 +80,17 @@ export function ThemeToggle() {
     const next = NEXT[current];
     apply(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+    syncLabel(next);
   };
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       onClick={cycle}
-      aria-label="Cycle color theme (system, light, dark)"
+      aria-label="Theme: system. Click to switch to light."
       title={LABEL.system}
-      className="-mr-2.5 flex size-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+      className="flex size-7 cursor-pointer items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground"
     >
       {/* Sun: shown when data-theme-pref="light" */}
       <svg
