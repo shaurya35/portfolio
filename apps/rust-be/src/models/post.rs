@@ -117,8 +117,7 @@ pub struct PostRow {
     pub markdown: Option<String>,
     /// Rendered once at write time (see `admin.rs` create/update) instead of
     /// re-run through the markdown/syntax-highlighting pipeline on every
-    /// read. `None` only for a native row written before this column
-    /// existed and not yet backfilled (see `backfill_post_html` in main.rs).
+    /// read.
     pub html: Option<String>,
     pub status: String,
     pub published_at: Option<DateTime<Utc>>,
