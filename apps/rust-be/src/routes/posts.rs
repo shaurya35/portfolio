@@ -2,15 +2,18 @@ use axum::Json;
 use axum::extract::{Path, State};
 
 use crate::error::AppError;
-use crate::models::post::{Post, PostRow, PostSummary};
+use crate::models::post::{Post, PostRow, PostSummary, PostSummaryRow};
 use crate::state::AppState;
 
 pub async fn list(State(state): State<AppState>) -> Result<Json<Vec<PostSummary>>, AppError> {
+    // Only the columns the summary serialises. The list response carries
+    // no body, so selecting markdown/html here just moved every post's full
+    // text across the connection to be dropped.
     let rows = sqlx::query_as!(
-        PostRow,
+        PostSummaryRow,
         r#"
-        SELECT id, slug, title, description, category, source, url, markdown, html, status,
-               published_at, created_at, updated_at
+        SELECT slug, title, description, category, source, url, status,
+               published_at, updated_at
         FROM posts
         WHERE status = 'published'
         ORDER BY published_at DESC

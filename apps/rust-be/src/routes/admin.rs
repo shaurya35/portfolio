@@ -9,7 +9,7 @@ use crate::auth;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
 use crate::extractors::visitor::client_ip;
-use crate::models::post::{AdminPost, AdminPostDetail, NewPost, PostRow, UpdatePost};
+use crate::models::post::{AdminPost, AdminPostDetail, AdminRow, NewPost, PostRow, UpdatePost};
 use crate::revalidate;
 use crate::state::AppState;
 
@@ -44,7 +44,7 @@ pub(super) async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    let epoch = *state.session_epoch.read().await;
+    let epoch = state.session_epoch().await?;
     let jar = jar.add(auth::session_cookie(epoch, &state.config.cookie_domain));
 
     Ok((jar, StatusCode::OK))
@@ -64,7 +64,7 @@ pub(super) async fn logout(
     )
     .fetch_one(&state.pool)
     .await?;
-    *state.session_epoch.write().await = row.epoch as u64;
+    *state.cached_session_epoch.write().await = Some(row.epoch as u64);
 
     let jar = jar.remove(auth::logout_cookie(&state.config.cookie_domain));
     Ok((jar, StatusCode::OK))
@@ -74,10 +74,12 @@ pub(super) async fn list(
     State(state): State<AppState>,
     _admin: Admin,
 ) -> Result<Json<Vec<AdminPost>>, AppError> {
+    // No html: the list response drops it (see `AdminPostDetail`), so
+    // fetching it only moved a rendered blob per row across the connection.
     let rows = sqlx::query_as!(
-        PostRow,
+        AdminRow,
         r#"
-        SELECT id, slug, title, description, category, source, url, markdown, html, status,
+        SELECT id, slug, title, description, category, source, url, markdown, status,
                published_at, created_at, updated_at
         FROM posts
         ORDER BY created_at DESC

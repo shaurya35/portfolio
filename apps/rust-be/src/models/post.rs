@@ -106,39 +106,39 @@ pub struct AdminPostDetail {
     pub html: Option<String>,
 }
 
-pub struct PostRow {
-    pub id: i64,
+#[derive(Debug)]
+pub struct MalformedRow {
+    pub slug: String,
+}
+
+fn parse_status(status: &str, slug: &str) -> Result<PostStatus, MalformedRow> {
+    PostStatus::parse(status).ok_or_else(|| MalformedRow {
+        slug: slug.to_owned(),
+    })
+}
+
+/// Exactly the columns `into_summary` reads.
+///
+/// `GET /posts` used to select the whole row — every post's markdown *and*
+/// its rendered html — and then drop both on the floor building the summary.
+/// Over a cross-region database connection that is a lot of bytes pulled
+/// halfway around the world to be freed immediately, on the one public route
+/// ISR re-polls on a timer.
+pub struct PostSummaryRow {
     pub slug: String,
     pub title: String,
     pub description: String,
     pub category: String,
     pub source: String,
     pub url: Option<String>,
-    pub markdown: Option<String>,
-    /// Rendered once at write time (see `admin.rs` create/update) instead of
-    /// re-run through the markdown/syntax-highlighting pipeline on every
-    /// read.
-    pub html: Option<String>,
     pub status: String,
     pub published_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug)]
-pub struct MalformedRow {
-    pub slug: String,
-}
-
-impl PostRow {
-    fn status(&self) -> Result<PostStatus, MalformedRow> {
-        PostStatus::parse(&self.status).ok_or_else(|| MalformedRow {
-            slug: self.slug.clone(),
-        })
-    }
-
+impl PostSummaryRow {
     pub fn into_summary(self) -> Result<PostSummary, MalformedRow> {
-        let status = self.status()?;
+        let status = parse_status(&self.status, &self.slug)?;
 
         let body = match self.source.as_str() {
             "x" => self.url.map(|url| PostSummaryBody::X { url }),
@@ -161,9 +161,28 @@ impl PostRow {
             updated_at: self.updated_at,
         })
     }
+}
 
+/// Every column the admin shapes are built from, minus the rendered html —
+/// which only the two reads that actually serve html need to fetch.
+pub struct AdminRow {
+    pub id: i64,
+    pub slug: String,
+    pub title: String,
+    pub description: String,
+    pub category: String,
+    pub source: String,
+    pub url: Option<String>,
+    pub markdown: Option<String>,
+    pub status: String,
+    pub published_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl AdminRow {
     pub fn into_admin(self) -> Result<AdminPost, MalformedRow> {
-        let status = self.status()?;
+        let status = parse_status(&self.status, &self.slug)?;
 
         let source = match self.source.as_str() {
             "x" => self.url.map(|url| PostSource::X { url }),
@@ -190,19 +209,72 @@ impl PostRow {
             updated_at: self.updated_at,
         })
     }
+}
+
+/// `AdminRow` plus the cached rendered html — the row shape for the queries
+/// whose SELECT/RETURNING carries it: the public post page and the admin
+/// preview, which serve it, plus create/update, which get it back from the
+/// row they just wrote.
+pub struct PostRow {
+    pub id: i64,
+    pub slug: String,
+    pub title: String,
+    pub description: String,
+    pub category: String,
+    pub source: String,
+    pub url: Option<String>,
+    pub markdown: Option<String>,
+    /// Rendered once at write time (see `admin.rs` create/update) instead of
+    /// re-run through the markdown/syntax-highlighting pipeline on every
+    /// read.
+    pub html: Option<String>,
+    pub status: String,
+    pub published_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl PostRow {
+    /// Peels the cached html off the rest, so the `AdminPost` mapping lives
+    /// in exactly one place rather than once per row shape.
+    fn split_html(self) -> (Option<String>, AdminRow) {
+        (
+            self.html,
+            AdminRow {
+                id: self.id,
+                slug: self.slug,
+                title: self.title,
+                description: self.description,
+                category: self.category,
+                source: self.source,
+                url: self.url,
+                markdown: self.markdown,
+                status: self.status,
+                published_at: self.published_at,
+                created_at: self.created_at,
+                updated_at: self.updated_at,
+            },
+        )
+    }
+
+    pub fn into_admin(self) -> Result<AdminPost, MalformedRow> {
+        self.split_html().1.into_admin()
+    }
 
     /// Same shape as `into_admin`, plus the cached `html` column — already
     /// rendered at write time (see `render_native_html` in `routes/admin.rs`)
     /// for every post regardless of status, so a draft's preview needs no
     /// rendering of its own, just returning a column `into_admin` drops.
-    pub fn into_admin_detail(mut self) -> Result<AdminPostDetail, MalformedRow> {
-        let html = self.html.take();
-        let post = self.into_admin()?;
-        Ok(AdminPostDetail { post, html })
+    pub fn into_admin_detail(self) -> Result<AdminPostDetail, MalformedRow> {
+        let (html, row) = self.split_html();
+        Ok(AdminPostDetail {
+            post: row.into_admin()?,
+            html,
+        })
     }
 
     pub fn into_detail(self) -> Result<Post, MalformedRow> {
-        let status = self.status()?;
+        let status = parse_status(&self.status, &self.slug)?;
 
         let body = match self.source.as_str() {
             "x" => self.url.map(|url| PostBody::X { url }),

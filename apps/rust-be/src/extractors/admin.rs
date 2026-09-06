@@ -25,7 +25,7 @@ impl FromRequestParts<AppState> for Admin {
             .and_then(|cookie| cookie.value().parse::<u64>().ok())
             .ok_or(AppError::Unauthorized)?;
 
-        let current_epoch = *state.session_epoch.read().await;
+        let current_epoch = state.session_epoch().await?;
 
         if cookie_epoch == current_epoch {
             Ok(Admin)

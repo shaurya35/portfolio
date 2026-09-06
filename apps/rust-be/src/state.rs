@@ -22,7 +22,10 @@ pub struct AppState {
     /// latency and a new failure path on login. Not worth it for a
     /// single-admin site — logging out signs out every device again, but
     /// authenticating a request costs nothing.
-    pub session_epoch: Arc<RwLock<u64>>,
+    ///
+    /// `None` until something asks for it: read it through
+    /// [`AppState::session_epoch`], never directly.
+    pub cached_session_epoch: Arc<RwLock<Option<u64>>>,
     /// Keyed by client IP. 5 attempts / 5 minutes — tight, since a real
     /// admin mistyping a password a handful of times is the only legitimate
     /// case this could ever block.
@@ -30,6 +33,34 @@ pub struct AppState {
     /// Keyed by client IP. 120 events / minute — generous, sized for a
     /// real visitor browsing quickly, not for scripted spam.
     pub event_limiter: Arc<RateLimiter>,
+}
+
+impl AppState {
+    /// The persisted session epoch (see the `persist_session_epoch`
+    /// migration), read from the database on first use rather than at boot.
+    ///
+    /// Only three paths ever need it — login, logout, and the `Admin`
+    /// extractor — and none of them is public traffic. Loading it eagerly
+    /// meant every cold start paid a cross-region round trip before the
+    /// server could bind, on behalf of a request that in practice was
+    /// almost always an anonymous `GET /posts`.
+    pub async fn session_epoch(&self) -> Result<u64, sqlx::Error> {
+        if let Some(epoch) = *self.cached_session_epoch.read().await {
+            return Ok(epoch);
+        }
+
+        let row = sqlx::query!("SELECT epoch FROM session_epoch WHERE singleton = true")
+            .fetch_one(&self.pool)
+            .await?;
+        let epoch = row.epoch as u64;
+
+        // Two concurrent first-requests can both miss and both query. They
+        // read the same singleton row, so whichever lands second writes the
+        // same value.
+        *self.cached_session_epoch.write().await = Some(epoch);
+
+        Ok(epoch)
+    }
 }
 
 pub fn generate_salt() -> String {

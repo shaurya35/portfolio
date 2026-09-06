@@ -19,7 +19,6 @@ RUN apt-get update \
 RUN useradd --system --create-home --shell /usr/sbin/nologin app
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/target/release/rust-be /app/rust-be
-COPY --from=builder --chown=app:app /app/migrations /app/migrations
 USER app
 EXPOSE 8080
 CMD ["/app/rust-be"]

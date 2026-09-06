@@ -32,20 +32,14 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let pool = db::connect(&config.database_url)
-        .await
-        .unwrap_or_else(|err| {
-            eprintln!("database connection failed: {err}");
-            std::process::exit(1);
-        });
-
-    sqlx::migrate!().run(&pool).await.unwrap_or_else(|err| {
-        eprintln!("migration failed: {err}");
-        std::process::exit(1);
-    });
-
-    let session_epoch = load_session_epoch(&pool).await.unwrap_or_else(|err| {
-        eprintln!("session epoch load failed: {err}");
+    // Nothing between here and `TcpListener::bind` touches the network.
+    // Migrations moved to the deploy step (see the `migrate` job in
+    // .github/workflows/ci.yml) and the session epoch loads on first admin
+    // request, because on Vercel every one of those round trips was paid
+    // again on every cold start — and the measured cost was ~1.9s of billed
+    // Active CPU per invocation against a database a hemisphere away.
+    let pool = db::connect(&config.database_url).unwrap_or_else(|err| {
+        eprintln!("invalid DATABASE_URL: {err}");
         std::process::exit(1);
     });
 
@@ -70,7 +64,7 @@ async fn main() {
         pool,
         config,
         daily_salt,
-        session_epoch: Arc::new(RwLock::new(session_epoch)),
+        cached_session_epoch: Arc::new(RwLock::new(None)),
         login_limiter: Arc::new(RateLimiter::new(5, Duration::from_secs(5 * 60))),
         event_limiter: Arc::new(RateLimiter::new(120, Duration::from_secs(60))),
     };
@@ -98,17 +92,4 @@ async fn main() {
         eprintln!("server error: {err}");
         std::process::exit(1);
     });
-}
-
-/// Loads the persisted session epoch (see `session_epoch.rs` migration) so
-/// logout invalidation survives a restart. `state::session_epoch` still
-/// holds the live value in memory afterwards — every admin request checks
-/// against that in-memory copy, not the database, so this pays one query
-/// at boot rather than a DB round trip per request.
-async fn load_session_epoch(pool: &sqlx::PgPool) -> Result<u64, sqlx::Error> {
-    let row = sqlx::query!("SELECT epoch FROM session_epoch WHERE singleton = true")
-        .fetch_one(pool)
-        .await?;
-
-    Ok(row.epoch as u64)
 }

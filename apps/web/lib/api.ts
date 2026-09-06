@@ -1,11 +1,15 @@
 import type { Writing, WritingSource, WritingStatus } from "@/types/writing";
 
-// Short enough that a broken on-demand webhook self-heals in under a minute
-// (worst case we hit was days of staleness), long enough that normal traffic
-// mostly hits the cache instead of the Rust backend's slow cold start.
-// revalidateTag("posts") in app/api/revalidate/route.ts is what makes a
-// publish show up immediately in the common case; this is just the backstop.
-const POSTS_REVALIDATE_SECONDS = 60;
+// A backstop, not the mechanism: revalidateTag("posts") in
+// app/api/revalidate/route.ts is what makes a publish show up, and it works
+// (the days-of-staleness incident was rust-be's REVALIDATE_URL being wrong,
+// since fixed). At 60s this window was re-polling the Rust backend ~1440
+// times a day per cache entry, and because that backend cold-starts on
+// almost every request — Vercel bills a cold start as Active CPU — the
+// backstop, not real traffic, was the single largest line on the compute
+// bill. An hour still self-heals a broken webhook well inside a day, for
+// 1/60th the invocations.
+const POSTS_REVALIDATE_SECONDS = 3600;
 const POSTS_TAG = "posts";
 
 /** Thrown when the backend URL is missing, to separate a deployment

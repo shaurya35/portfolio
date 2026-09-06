@@ -12,7 +12,7 @@ chrono = { version = "0.4.41", features = ["serde"] }
 thiserror = "2.0.20"
 dotenvy = "0.15.7"
 tracing = "0.1.44"
-sqlx = { version = "0.9.0", default-features = false, features = ["runtime-tokio", "tls-native-tls", "postgres", "macros", "migrate", "chrono"] }
+sqlx = { version = "0.9.0", default-features = false, features = ["runtime-tokio", "tls-native-tls", "postgres", "macros", "chrono"] }
 pulldown-cmark = "0.13"
 pulldown-cmark-escape = "0.11"
 argon2 = "0.5.3"
@@ -24,3 +24,14 @@ blake3 = "1.8.6"
 rand = "0.10.2"
 tower-http = { version = "0.6.11", features = ["cors"] }
 syntect = "5.3.0"
+
+# Cold starts are billed as Active CPU on Vercel and this binary is loaded
+# on nearly every one of them, so the size of the artifact is a running cost,
+# not just a build detail. Stripping symbols is most of the win; thin LTO and
+# a single codegen unit shrink it further and cost only build time.
+# Deliberately not `panic = "abort"`: a panic in one handler should take down
+# that task, not the instance.
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1
