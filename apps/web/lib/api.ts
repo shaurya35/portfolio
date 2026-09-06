@@ -7,9 +7,14 @@ import type { Writing, WritingSource, WritingStatus } from "@/types/writing";
 // times a day per cache entry, and because that backend cold-starts on
 // almost every request — Vercel bills a cold start as Active CPU — the
 // backstop, not real traffic, was the single largest line on the compute
-// bill. An hour still self-heals a broken webhook well inside a day, for
-// 1/60th the invocations.
-const POSTS_REVALIDATE_SECONDS = 3600;
+// bill.
+//
+// A day, not an hour: at 3600 this still costs up to ~3.6k background
+// refetches a month, which is more than the analytics beacon — every real
+// pageview on the site — puts through the same backend. The webhook is the
+// mechanism and it works; this only has to catch the case where it silently
+// stops, and catching that within a day is fine.
+const POSTS_REVALIDATE_SECONDS = 86400;
 const POSTS_TAG = "posts";
 
 /** Thrown when the backend URL is missing, to separate a deployment
