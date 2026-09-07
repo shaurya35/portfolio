@@ -43,3 +43,4 @@ bun check-types   # type-check all apps
 ## Docs
 
 The `docs/` folder has notes on the project's architecture, milestones, and the plan for the Rust backend.
+
