@@ -8,7 +8,7 @@ import { InlineScript } from "@/components/inline-script";
 import { Beacon } from "@/components/beacon";
 import { ToastProvider } from "@/components/toast";
 import { UnsavedChangesProvider } from "@/lib/use-unsaved-changes";
-import { site } from "@/content/site";
+import { site, SITE_URL, SITE_DESCRIPTION } from "@/content/site";
 import { socials } from "@/content/socials";
 import "./globals.css";
 
@@ -22,10 +22,12 @@ const sourceSerif4 = Source_Serif_4({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://shauryacodes.me";
-const SITE_TITLE = "Shaurya Jha";
-const SITE_DESCRIPTION = "Software engineer. Building products, not just projects.";
+const SITE_TITLE = site.name;
 
+// Fallback metadata for segments that don't set their own (404, admin).
+// Deliberately has no openGraph.url / twitter fields tied to a specific
+// path — pageMetadata() in lib/metadata.ts is what every real page uses,
+// so this fallback never gets mistaken for the page it's rendered on.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -45,7 +47,6 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: SITE_URL,
     siteName: SITE_TITLE,
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,

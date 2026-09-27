@@ -7,6 +7,8 @@ import { ArrowLeftIcon } from "@/components/icons";
 import { ReadingProgress } from "@/components/reading-progress";
 import { PostArticle } from "@/components/post-article";
 import type { Writing } from "@/types/writing";
+import { site, SITE_URL } from "@/content/site";
+import { pageMetadata } from "@/lib/metadata";
 
 export async function generateStaticParams() {
   const posts = await getPosts();
@@ -35,38 +37,19 @@ export async function generateMetadata({
     return {};
   }
 
-  return {
+  return pageMetadata({
     title: post.title,
     description: post.description,
-    alternates: {
-      canonical: `/writing/${post.slug}`,
-    },
-    openGraph: {
+    path: `/writing/${post.slug}`,
+    image: `/writing/${post.slug}/opengraph-image`,
+    imageAlt: post.title,
+    article: {
       type: "article",
-      url: `/writing/${post.slug}`,
-      siteName: "Shaurya Jha",
-      title: post.title,
-      description: post.description,
       publishedTime: post.date,
       modifiedTime: post.updatedAt ?? post.date,
       authors: ["Shaurya Jha"],
-      images: [
-        {
-          url: `/writing/${post.slug}/opengraph-image`,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
     },
-    twitter: {
-      card: "summary_large_image",
-      creator: "@_shaurya35",
-      title: post.title,
-      description: post.description,
-      images: [`/writing/${post.slug}/opengraph-image`],
-    },
-  };
+  });
 }
 
 export default async function WritingPostPage({
@@ -88,8 +71,35 @@ export default async function WritingPostPage({
     )
     .slice(0, 3);
 
+  const postUrl = `${SITE_URL}/writing/${post.slug}`;
+  const blogPostingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: post.updatedAt ?? post.date,
+    url: postUrl,
+    mainEntityOfPage: postUrl,
+    image: `${postUrl}/opengraph-image`,
+    author: {
+      "@type": "Person",
+      name: site.name,
+      url: SITE_URL,
+    },
+  };
+
   return (
     <article className="py-8">
+      {/* Escape "<" so post text containing "</script>" can't break out of
+          the tag. */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(blogPostingJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <ReadingProgress />
 
       <Link

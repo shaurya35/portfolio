@@ -1,5 +1,11 @@
 import type { Site } from "@/types/site";
 
+// Canonical host: shauryacodes.me 308-redirects here, so every URL we emit
+// (metadataBase, sitemap, robots, feed) should point at this host directly
+// rather than through the redirect.
+export const SITE_URL = "https://www.shauryacodes.me";
+export const SITE_DESCRIPTION = "Software engineer. Building products, not just projects.";
+
 export const site: Site = {
   name: "Shaurya Jha",
   role: "Engineer · Founder",

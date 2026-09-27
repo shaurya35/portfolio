@@ -1,6 +1,6 @@
 import { getPosts } from "@/lib/api";
+import { SITE_URL } from "@/content/site";
 
-const SITE_URL = "https://shauryacodes.me";
 const FEED_URL = `${SITE_URL}/writing/feed.xml`;
 
 function escapeXml(value: string): string {

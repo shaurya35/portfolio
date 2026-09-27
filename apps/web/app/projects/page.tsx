@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { projects } from "@/content/projects";
 import { ProjectList } from "@/components/project-list";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+// See app/writing/page.tsx: title/description alone inherits the whole
+// root-layout openGraph object (including og:url), so this builds its own.
+export const metadata: Metadata = pageMetadata({
   title: "Projects",
   description: "A few products and experiments I've shipped.",
-};
+  path: "/projects",
+});
 
 export default function ProjectsPage() {
   return (

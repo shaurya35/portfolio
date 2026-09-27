@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPosts } from "@/lib/api";
-
-const SITE_URL = "https://shauryacodes.me";
+import { SITE_URL } from "@/content/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = ["", "/projects", "/writing"].map(
