@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   EditorContent,
+  Node,
   useEditor,
   useEditorState,
   type Editor,
@@ -115,6 +116,42 @@ const CodeBlock = CodeBlockLowlight.extend({
           state.ensureNewLine();
           state.write("```");
           state.closeBlock(node);
+        },
+      },
+    };
+  },
+});
+
+type TextSerializerState = {
+  out: string;
+  atBlockStart: boolean;
+  text: (text: string, escape?: boolean) => void;
+};
+
+// A Shift+Enter line break serializes as a trailing `\`, so whatever follows
+// it starts a new line of Markdown. prosemirror-markdown only escapes
+// line-start syntax (`- `, `# `, `1. `, `> `) at the start of a *block*,
+// never after a hard break — so a line typed as "- item" after Shift+Enter
+// was saved unescaped, came back as a real list item, and stranded the `\`
+// before it as a literal backslash on the published page.
+//
+// This is StarterKit's own text node (it is exactly `name: "text", group:
+// "inline"`) with a serializer that marks text right after a hard break as
+// line-start, so it gets the same escaping as the first line of a block.
+// renderInline resets atBlockStart after every node, so setting it here only
+// affects this one text node.
+const TextEscapingAfterBreak = Node.create({
+  name: "text",
+  group: "inline",
+  addStorage() {
+    return {
+      markdown: {
+        serialize(state: TextSerializerState, node: { text: string }) {
+          if (state.out.endsWith("\\\n")) {
+            state.atBlockStart = true;
+          }
+          // Same HTML escaping tiptap-markdown's default text serializer does.
+          state.text(node.text.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
         },
       },
     };
@@ -417,7 +454,8 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
 
   const extensions = useMemo(
     () => [
-      StarterKit.configure({ codeBlock: false }),
+      StarterKit.configure({ codeBlock: false, text: false }),
+      TextEscapingAfterBreak,
       CodeBlock.configure({ lowlight }),
       // markdownLinks: typing or pasting `[text](url)` converts to a real
       // link. Off by default in the extension, which otherwise leaves that
