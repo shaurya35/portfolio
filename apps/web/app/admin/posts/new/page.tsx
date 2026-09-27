@@ -41,7 +41,9 @@ export default function NewPostPage() {
     }
 
     show("Post created.");
-    await syncPublicPages();
+    // Not awaited, for the same reason as in edit-post-view.tsx: PostForm
+    // keeps the form "unsaved" until this handler returns.
+    void syncPublicPages();
     router.push("/admin/posts");
   };
 

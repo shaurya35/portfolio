@@ -77,8 +77,12 @@ export function EditPostView({ id }: { id: string }) {
     }
 
     show("Changes saved.");
-    // Awaited before navigating so a failure toast isn't lost with the page.
-    await syncPublicPages();
+    // Not awaited: the save is done, and PostForm only clears its "unsaved
+    // changes" flag once this handler returns — awaiting a slow refresh left
+    // the button on "Saving…" and made nav links prompt about unsaved
+    // changes that were already saved. A failure toast still shows after the
+    // navigation, since ToastProvider lives in the root layout.
+    void syncPublicPages();
     router.push("/admin/posts");
   };
 
