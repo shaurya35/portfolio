@@ -135,8 +135,10 @@ type TextSerializerState = {
 // was saved unescaped, came back as a real list item, and stranded the `\`
 // before it as a literal backslash on the published page.
 //
-// This is StarterKit's own text node (it is exactly `name: "text", group:
-// "inline"`) with a serializer that marks text right after a hard break as
+// This is StarterKit's own text node (`name: "text", group: "inline"`; the
+// stock one also carries parseMarkdown/renderMarkdown hooks, but those are
+// for the official @tiptap/markdown extension, not the tiptap-markdown one
+// used here) with a serializer that marks text right after a hard break as
 // line-start, so it gets the same escaping as the first line of a block.
 // renderInline resets atBlockStart after every node, so setting it here only
 // affects this one text node.
