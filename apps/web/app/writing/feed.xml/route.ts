@@ -3,6 +3,13 @@ import { SITE_URL } from "@/content/site";
 
 const FEED_URL = `${SITE_URL}/writing/feed.xml`;
 
+// Feed readers decide "have I seen this item?" by <guid>, so a guid must never
+// change once published. Native guids were built from the site URL back when
+// it was https://shauryacodes.me; moving SITE_URL to www made every existing
+// item look new to subscribers. The guid stays pinned to the original host
+// (it still resolves, via the redirect) while <link> follows SITE_URL.
+const GUID_BASE = "https://shauryacodes.me";
+
 function escapeXml(value: string): string {
   return value.replace(/[<>&'\"]/g, (character) => {
     switch (character) {
@@ -38,11 +45,14 @@ export async function GET() {
 
       if (!url) return null;
 
+      const guid =
+        post.source === "native" ? `${GUID_BASE}/writing/${post.slug}` : url;
+
       return `
         <item>
           <title>${escapeXml(post.title)}</title>
           <link>${escapeXml(url)}</link>
-          <guid isPermaLink="true">${escapeXml(url)}</guid>
+          <guid isPermaLink="true">${escapeXml(guid)}</guid>
           <description>${escapeXml(post.description)}</description>
           <category>${escapeXml(post.category)}</category>
           <pubDate>${toRfc822(post.date)}</pubDate>
