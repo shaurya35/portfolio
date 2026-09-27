@@ -16,7 +16,14 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-const AUTO_DISMISS_MS = 3500;
+// Errors stay up longer: a success toast only confirms what the user just
+// did, but an error ("the public site didn't refresh") is news they need to
+// act on, and at 3.5s it was easy to miss while the page navigated away.
+// There's a dismiss button for either.
+const AUTO_DISMISS_MS: Record<ToastVariant, number> = {
+  success: 3500,
+  error: 10000,
+};
 
 /**
  * A minimal toast stack — no library. Two variants, auto-dismiss, no
@@ -35,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (message: string, variant: ToastVariant = "success") => {
       const id = nextId.current++;
       setToasts((current) => [...current, { id, message, variant }]);
-      window.setTimeout(() => dismiss(id), AUTO_DISMISS_MS);
+      window.setTimeout(() => dismiss(id), AUTO_DISMISS_MS[variant]);
     },
     [dismiss],
   );
