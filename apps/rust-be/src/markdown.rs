@@ -618,4 +618,36 @@ mod tests {
         );
         assert!(!out.contains("target=\"_blank\""), "got: {out}");
     }
+
+    // Regression: lines typed after Shift+Enter in the admin editor.
+    // The editor serializes a line break as a trailing `\`. Before the fix in
+    // apps/web/app/admin/_components/rich-text-editor.tsx it did not escape
+    // line-start syntax after that break, so "- item" became a real list item
+    // and every `\` before one was rendered as a literal backslash (the
+    // published "The first box contains:\" on 2026-09-27). Both strings are
+    // exactly what the editor saved before and after the fix.
+    const SHIFT_ENTER_UNESCAPED: &str =
+        "The first box contains:\\\n- The proposed payload.\\\n# not a heading\\\n1. not a list";
+    const SHIFT_ENTER_ESCAPED: &str = "The first box contains:\\\n\\- The proposed payload.\\\n\\# not a heading\\\n1\\. not a list";
+
+    #[test]
+    fn unescaped_line_starts_after_hard_breaks_break_the_paragraph() {
+        let out = render(SHIFT_ENTER_UNESCAPED);
+        assert!(out.contains("contains:\\</p>"), "got: {out}");
+        assert!(out.contains("<ul>") && out.contains("<h1>"), "got: {out}");
+    }
+
+    #[test]
+    fn escaped_line_starts_after_hard_breaks_stay_one_paragraph() {
+        let out = render(SHIFT_ENTER_ESCAPED);
+        assert_eq!(out.matches("<p>").count(), 1, "got: {out}");
+        assert_eq!(out.matches("<br />").count(), 3, "got: {out}");
+        assert!(!out.contains('\\'), "literal backslash leaked: {out}");
+        for tag in ["<ul>", "<ol>", "<h1>"] {
+            assert!(!out.contains(tag), "unexpected {tag}: {out}");
+        }
+        assert!(out.contains("- The proposed payload."), "got: {out}");
+        assert!(out.contains("# not a heading"), "got: {out}");
+        assert!(out.contains("1. not a list"), "got: {out}");
+    }
 }
