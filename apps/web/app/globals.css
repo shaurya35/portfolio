@@ -132,13 +132,16 @@ input:-webkit-autofill:focus {
   border-top: 1px solid currentColor;
 }
 
+/* Matches body copy (no serif/italic override) so a quoted line reads as
+   the author's own emphasis rather than an inserted foreign quote — the
+   left border alone is enough to set it apart. Border color follows the
+   site's existing subtle-divider convention (var(--border), same as the
+   title-block dividers in components/post-article.tsx) rather than a bold
+   var(--foreground) bar. */
 .post-content blockquote {
   margin-top: 1.75rem;
-  border-left: 3px solid var(--foreground);
+  border-left: 2px solid var(--border);
   padding: 0.125rem 0 0.125rem 1.25rem;
-  font-family: var(--font-serif);
-  font-size: 1.125em;
-  font-style: italic;
   color: var(--foreground);
 }
 
