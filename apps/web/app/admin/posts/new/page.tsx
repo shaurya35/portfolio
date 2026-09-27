@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation";
 import { createPost, isUnauthorized } from "@/app/admin/_lib/api";
 import { PostForm, type PostFormValues } from "@/app/admin/_components/post-form";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
+import { useSyncPublicPages } from "@/app/admin/_lib/use-sync-public-pages";
 import { useToast } from "@/components/toast";
 
 export default function NewPostPage() {
   const router = useRouter();
   const onError = useAdminError();
   const { show } = useToast();
+  const syncPublicPages = useSyncPublicPages();
 
   const handleSubmit = async (values: PostFormValues) => {
     const body =
@@ -39,6 +41,7 @@ export default function NewPostPage() {
     }
 
     show("Post created.");
+    await syncPublicPages();
     router.push("/admin/posts");
   };
 

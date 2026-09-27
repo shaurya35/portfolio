@@ -6,11 +6,13 @@ import { type AdminPost, deletePost, getPosts } from "@/app/admin/_lib/api";
 import { StatusBadge } from "@/app/admin/_components/status-badge";
 import { TrashIcon } from "@/components/icons";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
+import { useSyncPublicPages } from "@/app/admin/_lib/use-sync-public-pages";
 import { useToast } from "@/components/toast";
 
 export default function AdminPostsPage() {
   const onError = useAdminError();
   const { show } = useToast();
+  const syncPublicPages = useSyncPublicPages();
 
   const [posts, setPosts] = useState<AdminPost[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,9 +51,13 @@ export default function AdminPostsPage() {
       show("Post deleted.");
     } catch (err) {
       onError(err, "Failed to delete post.");
+      return;
     } finally {
       setDeletingId(null);
     }
+    // Outside the try: syncPublicPages() handles its own failure, and a
+    // refresh problem must not be reported as "Failed to delete post."
+    await syncPublicPages();
   };
 
   return (

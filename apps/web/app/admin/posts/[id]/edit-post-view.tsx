@@ -11,12 +11,14 @@ import {
 } from "@/app/admin/_lib/api";
 import { PostForm, type PostFormValues } from "@/app/admin/_components/post-form";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
+import { useSyncPublicPages } from "@/app/admin/_lib/use-sync-public-pages";
 import { useToast } from "@/components/toast";
 
 export function EditPostView({ id }: { id: string }) {
   const router = useRouter();
   const onError = useAdminError();
   const { show } = useToast();
+  const syncPublicPages = useSyncPublicPages();
   const postId = Number(id);
   const validId = Number.isInteger(postId);
 
@@ -75,6 +77,8 @@ export function EditPostView({ id }: { id: string }) {
     }
 
     show("Changes saved.");
+    // Awaited before navigating so a failure toast isn't lost with the page.
+    await syncPublicPages();
     router.push("/admin/posts");
   };
 
