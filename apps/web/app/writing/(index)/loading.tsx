@@ -1,3 +1,8 @@
+// Lives in the (index) route group so it only wraps /writing itself. At
+// app/writing/loading.tsx it also wrapped /writing/[slug], including the
+// existence check in app/writing/[slug]/layout.tsx, so the response started
+// streaming with a 200 before that check could call notFound(): drafts and
+// unknown slugs returned HTTP 200 with the not-found page instead of a 404.
 export default function Loading() {
   return (
     <section className="py-8">

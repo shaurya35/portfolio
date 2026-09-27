@@ -113,3 +113,17 @@ export async function getPost(slug: string): Promise<Writing | undefined> {
   const post: PostDetail = await res.json();
   return toWritingDetail(post);
 }
+
+/** A post that /writing/[slug] can render: published (getPost only returns
+ * published posts), native, and with rendered HTML. Shared by that route's
+ * layout (which 404s on undefined) and its page, so the two can't disagree
+ * about what exists. */
+export async function getNativePost(
+  slug: string,
+): Promise<(Writing & { html: string }) | undefined> {
+  const post = await getPost(slug);
+  if (!post || post.source !== "native" || post.html == null) {
+    return undefined;
+  }
+  return { ...post, html: post.html };
+}

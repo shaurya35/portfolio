@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPost, getPosts } from "@/lib/api";
+import { getNativePost, getPosts } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { ArrowLeftIcon } from "@/components/icons";
 import { ReadingProgress } from "@/components/reading-progress";
 import { PostArticle } from "@/components/post-article";
-import type { Writing } from "@/types/writing";
 import { site, SITE_URL } from "@/content/site";
 import { pageMetadata } from "@/lib/metadata";
 
@@ -15,16 +14,6 @@ export async function generateStaticParams() {
   return posts
     .filter((post) => post.source === "native")
     .map((post) => ({ slug: post.slug }));
-}
-
-async function getNativePost(
-  slug: string,
-): Promise<(Writing & { html: string }) | undefined> {
-  const post = await getPost(slug);
-  if (!post || post.source !== "native" || post.html == null) {
-    return undefined;
-  }
-  return { ...post, html: post.html };
 }
 
 export async function generateMetadata({

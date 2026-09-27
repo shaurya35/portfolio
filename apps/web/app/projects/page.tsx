@@ -3,7 +3,7 @@ import { projects } from "@/content/projects";
 import { ProjectList } from "@/components/project-list";
 import { pageMetadata } from "@/lib/metadata";
 
-// See app/writing/page.tsx: title/description alone inherits the whole
+// See app/writing/(index)/page.tsx: title/description alone inherits the whole
 // root-layout openGraph object (including og:url), so this builds its own.
 export const metadata: Metadata = pageMetadata({
   title: "Projects",
