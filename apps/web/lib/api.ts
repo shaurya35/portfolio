@@ -1,21 +1,18 @@
 import type { Writing, WritingSource, WritingStatus } from "@/types/writing";
 
-// A backstop, not the mechanism: revalidateTag("posts") in
-// app/api/revalidate/route.ts is what makes a publish show up, and it works
-// (the days-of-staleness incident was rust-be's REVALIDATE_URL being wrong,
-// since fixed). At 60s this window was re-polling the Rust backend ~1440
-// times a day per cache entry, and because that backend cold-starts on
-// almost every request — Vercel bills a cold start as Active CPU — the
-// backstop, not real traffic, was the single largest line on the compute
-// bill.
+// A backstop, not the mechanism: the admin's syncPublicPages() Server Action
+// (app/admin/_lib/sync-public-pages.ts) is what makes a publish show up. At
+// 60s this window was re-polling the Rust backend ~1440 times a day per cache
+// entry, and because that backend cold-starts on almost every request —
+// Vercel bills a cold start as Active CPU — the backstop, not real traffic,
+// was the single largest line on the compute bill.
 //
-// A day, not an hour: at 3600 this still costs up to ~3.6k background
-// refetches a month, which is more than the analytics beacon — every real
-// pageview on the site — puts through the same backend. The webhook is the
-// mechanism and it works; this only has to catch the case where it silently
-// stops, and catching that within a day is fine.
+// It also hid that the rust-be webhook → revalidateTag path wasn't taking
+// effect in production: at 60s every publish showed up within a minute or so
+// anyway. Once this went to a day, the first publish after it (2026-09-27)
+// never appeared. Don't lean on the webhook alone.
 const POSTS_REVALIDATE_SECONDS = 86400;
-const POSTS_TAG = "posts";
+export const POSTS_TAG = "posts";
 
 /** Thrown when the backend URL is missing, to separate a deployment
  * misconfiguration from an ordinary request failure in build logs. */
@@ -78,10 +75,20 @@ function toWritingDetail(post: PostDetail): Writing {
   };
 }
 
-export async function getPosts(): Promise<Writing[]> {
-  const res = await fetch(`${apiBase()}/posts`, {
+export function getPosts(): Promise<Writing[]> {
+  return fetchPosts({
     next: { revalidate: POSTS_REVALIDATE_SECONDS, tags: [POSTS_TAG] },
   });
+}
+
+/** What the backend has right now, bypassing the cache — for comparing
+ * against what getPosts() (and therefore every public page) is serving. */
+export function getPostsLive(): Promise<Writing[]> {
+  return fetchPosts({ cache: "no-store" });
+}
+
+async function fetchPosts(init: RequestInit): Promise<Writing[]> {
+  const res = await fetch(`${apiBase()}/posts`, init);
   if (!res.ok) {
     throw new Error(`Failed to fetch posts: ${res.status}`);
   }
