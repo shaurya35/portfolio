@@ -7,6 +7,22 @@ function socialHref(name: string) {
 }
 
 const nextConfig: NextConfig = {
+  // Nothing on this site is meant to be embedded, and /admin must not be:
+  // framed invisibly on another page, its login form and delete buttons
+  // could be clickjacked. frame-ancestors is the modern control;
+  // X-Frame-Options covers browsers that predate it.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {
