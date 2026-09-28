@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { isProductionSite } from "@/lib/track-click";
 
 const RUST_API_URL = process.env.NEXT_PUBLIC_RUST_API_URL;
 
@@ -31,7 +32,7 @@ export function Beacon() {
 
   useEffect(() => {
     // The admin is the site owner, not a visitor.
-    if (!RUST_API_URL || pathname.startsWith("/admin")) return;
+    if (!RUST_API_URL || pathname.startsWith("/admin") || !isProductionSite()) return;
     try {
       const referrer = externalReferrer();
       const body = JSON.stringify({
