@@ -154,6 +154,11 @@ input:-webkit-autofill:focus {
   padding: 0.125rem 0.375rem;
   font-family: var(--font-mono-stack);
   font-size: 0.875em;
+  /* A long identifier or path in running text has no break points, so on a
+     phone it pushed the whole page wider than the screen. Same treatment as
+     links above; blocks are unaffected (their `white-space: pre` never
+     wraps). */
+  overflow-wrap: anywhere;
 }
 
 .post-content h1,
