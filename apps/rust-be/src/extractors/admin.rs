@@ -25,9 +25,15 @@ impl FromRequestParts<AppState> for Admin {
             .and_then(|cookie| cookie.value().parse::<u64>().ok())
             .ok_or(AppError::Unauthorized)?;
 
-        let current_epoch = state.session_epoch().await?;
+        if cookie_epoch == state.session_epoch().await? {
+            return Ok(Admin);
+        }
 
-        if cookie_epoch == current_epoch {
+        // A mismatch may be this instance's cache being stale rather than
+        // the cookie: a cookie issued after a logout that another instance
+        // handled carries the newer epoch. Check the database once before
+        // turning the admin away.
+        if cookie_epoch == state.reload_session_epoch().await? {
             Ok(Admin)
         } else {
             Err(AppError::Unauthorized)

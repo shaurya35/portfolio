@@ -49,14 +49,27 @@ impl AppState {
             return Ok(epoch);
         }
 
+        self.reload_session_epoch().await
+    }
+
+    /// Reads the epoch from the database even when this instance has one
+    /// cached, and caches what it read.
+    ///
+    /// The cache is per instance and only the instance that handles a
+    /// logout updates its own copy, so another instance still warm from
+    /// before that logout keeps the old epoch. Login used to trust that
+    /// copy: signing back in through a stale instance issued a cookie with
+    /// the pre-logout epoch, which the up-to-date instances then rejected —
+    /// "session expired" moments after a successful sign-in. Login and a
+    /// cookie that doesn't match the cache (both rare) come through here.
+    pub async fn reload_session_epoch(&self) -> Result<u64, sqlx::Error> {
         let row = sqlx::query!("SELECT epoch FROM session_epoch WHERE singleton = true")
             .fetch_one(&self.pool)
             .await?;
         let epoch = row.epoch as u64;
 
-        // Two concurrent first-requests can both miss and both query. They
-        // read the same singleton row, so whichever lands second writes the
-        // same value.
+        // Two concurrent reloads read the same singleton row, so whichever
+        // lands second writes the same value.
         *self.cached_session_epoch.write().await = Some(epoch);
 
         Ok(epoch)

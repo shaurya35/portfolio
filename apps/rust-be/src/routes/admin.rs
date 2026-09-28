@@ -44,7 +44,9 @@ pub(super) async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    let epoch = state.session_epoch().await?;
+    // Not the cached copy: this instance may predate the last logout (see
+    // `reload_session_epoch`).
+    let epoch = state.reload_session_epoch().await?;
     let jar = jar.add(auth::session_cookie(epoch, &state.config.cookie_domain));
 
     Ok((jar, StatusCode::OK))
