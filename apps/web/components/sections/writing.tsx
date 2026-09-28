@@ -3,6 +3,7 @@ import { getPosts } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { SectionHeading } from "@/components/section-heading";
 import { CalendarIcon, ArrowRightIcon } from "@/components/icons";
+import { TrackedLink } from "@/components/tracked-link";
 
 export async function Writing() {
   const writings = await getPosts();
@@ -41,14 +42,17 @@ export async function Writing() {
                   {content}
                 </Link>
               ) : (
-                <a
+                // Same click event as the /writing list sends for this post,
+                // so an outbound read counts wherever it started.
+                <TrackedLink
+                  trackTarget={`post:${post.slug}`}
                   href={post.href}
                   target="_blank"
                   rel="noreferrer"
                   className="group block"
                 >
                   {content}
-                </a>
+                </TrackedLink>
               )}
             </li>
           );
