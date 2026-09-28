@@ -8,6 +8,7 @@ use serde::Deserialize;
 use crate::auth;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
+use crate::extractors::same_origin::SameOrigin;
 use crate::extractors::visitor::client_ip;
 use crate::models::post::{AdminPost, AdminPostDetail, AdminRow, NewPost, PostRow, UpdatePost};
 use crate::revalidate;
@@ -54,6 +55,9 @@ pub(super) async fn login(
 
 pub(super) async fn logout(
     State(state): State<AppState>,
+    // Before `Admin`: a cross-site request is refused without touching the
+    // session at all.
+    _same_origin: SameOrigin,
     _admin: Admin,
     jar: SignedCookieJar,
 ) -> Result<(SignedCookieJar, StatusCode), AppError> {
