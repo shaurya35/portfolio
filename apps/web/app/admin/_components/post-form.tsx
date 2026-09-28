@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { AdminPost, PostSource, PostStatus } from "@/app/admin/_lib/api";
-import { ApiRequestError } from "@/app/admin/_lib/api";
+import { ApiRequestError, isUnauthorized } from "@/app/admin/_lib/api";
 import { RichTextEditor } from "@/app/admin/_components/rich-text-editor";
 import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 
@@ -74,6 +74,7 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
 
   const [slugError, setSlugError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const { setDirty, confirmNavigation } = useUnsavedChanges();
@@ -138,6 +139,7 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
     event.preventDefault();
     setSlugError(null);
     setFormError(null);
+    setSessionExpired(false);
 
     if (source === "native" && markdown.trim().length === 0) {
       setFormError("Write some content before saving.");
@@ -161,6 +163,11 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
     } catch (err) {
       if (err instanceof ApiRequestError && err.status === 409) {
         setSlugError(err.message);
+      } else if (isUnauthorized(err)) {
+        // Not a redirect to login: that unmounted this form and threw away
+        // everything typed since the last save. Signing in from another tab
+        // sets the same cookie, so the author can just press save again.
+        setSessionExpired(true);
       } else if (err instanceof ApiRequestError) {
         setFormError(err.message);
       } else {
@@ -327,6 +334,17 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
           </button>
         </div>
       </div>
+
+      {sessionExpired ? (
+        <p role="alert" className="text-sm text-destructive">
+          Your session expired, so nothing was saved. Your changes are still
+          here:{" "}
+          <a href="/admin" target="_blank" rel="noopener" className="underline">
+            sign in again in a new tab
+          </a>
+          , then save again.
+        </p>
+      ) : null}
 
       {formError ? (
         <p role="alert" className="text-sm text-destructive">

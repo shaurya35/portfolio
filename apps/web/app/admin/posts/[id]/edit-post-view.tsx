@@ -6,7 +6,6 @@ import {
   type AdminPostDetail,
   ApiRequestError,
   getPost,
-  isUnauthorized,
   updatePost,
 } from "@/app/admin/_lib/api";
 import { PostForm, type PostFormValues } from "@/app/admin/_components/post-form";
@@ -60,21 +59,15 @@ export function EditPostView({ id }: { id: string }) {
         ? { source: "native" as const, markdown: values.markdown }
         : { source: values.source, url: values.url };
 
-    try {
-      await updatePost(postId, {
-        title: values.title,
-        description: values.description,
-        category: values.category,
-        status: values.status,
-        ...body,
-      });
-    } catch (err) {
-      if (isUnauthorized(err)) {
-        onError(err, "Failed to save changes.");
-        return;
-      }
-      throw err;
-    }
+    // Failures, including an expired session, are left to PostForm, which
+    // reports them inline and keeps the unsaved edits on screen.
+    await updatePost(postId, {
+      title: values.title,
+      description: values.description,
+      category: values.category,
+      status: values.status,
+      ...body,
+    });
 
     show("Changes saved.");
     // Not awaited: the save is done, and PostForm only clears its "unsaved
