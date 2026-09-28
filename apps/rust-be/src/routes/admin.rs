@@ -137,6 +137,9 @@ pub(super) async fn create(
     body: Result<Json<NewPost>, JsonRejection>,
 ) -> Result<(StatusCode, Json<AdminPost>), AppError> {
     let Json(new_post) = body?;
+    new_post
+        .validate()
+        .map_err(|message| AppError::BadRequest(message.to_owned()))?;
     let status = new_post.status.as_str();
     let (source, url, markdown) = new_post.source.into_parts();
     let html = render_native_html(markdown.as_deref());
@@ -186,6 +189,9 @@ pub(super) async fn update(
     body: Result<Json<UpdatePost>, JsonRejection>,
 ) -> Result<Json<AdminPost>, AppError> {
     let Json(update) = body?;
+    update
+        .validate()
+        .map_err(|message| AppError::BadRequest(message.to_owned()))?;
     let status = update.status.as_str();
     let (source, url, markdown) = update.source.into_parts();
     let html = render_native_html(markdown.as_deref());

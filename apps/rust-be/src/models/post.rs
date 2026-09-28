@@ -80,6 +80,77 @@ pub struct UpdatePost {
     pub status: PostStatus,
 }
 
+/// Why a post body was refused, as the message the admin form shows.
+pub type Invalid = &'static str;
+
+fn require_text(value: &str, message: Invalid) -> Result<(), Invalid> {
+    if value.trim().is_empty() {
+        Err(message)
+    } else {
+        Ok(())
+    }
+}
+
+impl PostSource {
+    fn validate(&self) -> Result<(), Invalid> {
+        match self {
+            PostSource::X { url } | PostSource::Medium { url } => {
+                // Rendered as the link's href on /writing and the home page.
+                if url.starts_with("https://") || url.starts_with("http://") {
+                    Ok(())
+                } else {
+                    Err("The link must start with https://.")
+                }
+            }
+            PostSource::Native { markdown } => {
+                require_text(markdown, "Write some content before saving.")
+            }
+        }
+    }
+}
+
+/// The fields every save shares. The admin form checks these too, but
+/// `required` accepts a title of only spaces, which published as a blank
+/// heading, and nothing else stopped a malformed body.
+fn validate_common(
+    title: &str,
+    description: &str,
+    category: &str,
+    source: &PostSource,
+) -> Result<(), Invalid> {
+    require_text(title, "Enter a title.")?;
+    require_text(description, "Enter a description.")?;
+    require_text(category, "Enter a category.")?;
+    source.validate()
+}
+
+/// Lowercase letters and digits in hyphen-separated runs — what the form's
+/// slugify produces, and what can sit in /writing/<slug> unescaped.
+fn is_valid_slug(slug: &str) -> bool {
+    !slug.is_empty()
+        && slug.split('-').all(|part| {
+            !part.is_empty()
+                && part
+                    .bytes()
+                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit())
+        })
+}
+
+impl NewPost {
+    pub fn validate(&self) -> Result<(), Invalid> {
+        if !is_valid_slug(&self.slug) {
+            return Err("Use lowercase letters, numbers and single hyphens in the slug.");
+        }
+        validate_common(&self.title, &self.description, &self.category, &self.source)
+    }
+}
+
+impl UpdatePost {
+    pub fn validate(&self) -> Result<(), Invalid> {
+        validate_common(&self.title, &self.description, &self.category, &self.source)
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct AdminPost {
     pub id: i64,
@@ -336,4 +407,58 @@ pub struct Post {
     pub published_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn native(markdown: &str) -> PostSource {
+        PostSource::Native {
+            markdown: markdown.to_owned(),
+        }
+    }
+
+    #[test]
+    fn slugs_the_form_produces_are_valid() {
+        for slug in ["a", "what-ive-learned", "teardown-1-backpressure", "2026"] {
+            assert!(is_valid_slug(slug), "{slug}");
+        }
+    }
+
+    #[test]
+    fn malformed_slugs_are_refused() {
+        for slug in [
+            "",
+            "-a",
+            "a-",
+            "a--b",
+            "A-b",
+            "a b",
+            "a/b",
+            "caf\u{e9}",
+            "a_b",
+        ] {
+            assert!(!is_valid_slug(slug), "{slug:?}");
+        }
+    }
+
+    #[test]
+    fn blank_fields_are_refused() {
+        assert!(validate_common("  ", "d", "c", &native("x")).is_err());
+        assert!(validate_common("t", "\t", "c", &native("x")).is_err());
+        assert!(validate_common("t", "d", "", &native("x")).is_err());
+        assert!(validate_common("t", "d", "c", &native(" \n ")).is_err());
+        assert!(validate_common("t", "d", "c", &native("body")).is_ok());
+    }
+
+    #[test]
+    fn link_posts_need_a_web_url() {
+        let x = |url: &str| PostSource::X {
+            url: url.to_owned(),
+        };
+        assert!(validate_common("t", "d", "c", &x("https://x.com/a/status/1")).is_ok());
+        assert!(validate_common("t", "d", "c", &x("x.com/a")).is_err());
+        assert!(validate_common("t", "d", "c", &x("javascript:alert(1)")).is_err());
+    }
 }
