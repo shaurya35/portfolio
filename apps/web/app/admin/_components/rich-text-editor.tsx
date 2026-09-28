@@ -492,7 +492,13 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
       }),
       Image,
       Placeholder.configure({ placeholder: "Write your post…" }),
-      Markdown.configure({ html: false }),
+      // transformPastedText: plain text pasted in (a draft from a notes app
+      // or a .md file) is parsed as Markdown. Without it "## Heading" and
+      // "- item" stayed literal paragraphs, and saving escaped them to
+      // "\## Heading" / "\- item": the post showed the raw symbols. Only
+      // plain-text pastes go through this; rich HTML pastes, plain-text-only
+      // pastes (Shift+Cmd+V) and pastes into a code block are unaffected.
+      Markdown.configure({ html: false, transformPastedText: true }),
     ],
     [],
   );
