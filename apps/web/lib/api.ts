@@ -116,11 +116,23 @@ export async function getPost(slug: string): Promise<Writing | undefined> {
 
 /** A post that /writing/[slug] can render: published (getPost only returns
  * published posts), native, and with rendered HTML. Shared by that route's
- * layout (which 404s on undefined) and its page, so the two can't disagree
- * about what exists. */
+ * layout (which 404s on undefined), its page and its OG image, so they
+ * can't disagree about what exists.
+ *
+ * The cached list is checked first so a URL for a post that doesn't exist
+ * (a typo, a stale link, a bot trying /writing/<anything>) is answered
+ * without calling rust-be at all. Every unknown slug used to be its own
+ * uncached backend request, and that backend cold-starts on almost every
+ * request. The list and the per-post fetch share POSTS_TAG, so a publish
+ * refreshes both together. */
 export async function getNativePost(
   slug: string,
 ): Promise<(Writing & { html: string }) | undefined> {
+  const posts = await getPosts();
+  if (!posts.some((post) => post.slug === slug && post.source === "native")) {
+    return undefined;
+  }
+
   const post = await getPost(slug);
   if (!post || post.source !== "native" || post.html == null) {
     return undefined;

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
-import { getPost } from "@/lib/api";
+import { getNativePost } from "@/lib/api";
 
 export const alt = "Writing by Shaurya Jha";
 export const size = { width: 1200, height: 630 };
@@ -12,9 +12,9 @@ export default async function OpenGraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPost(slug);
+  const post = await getNativePost(slug);
 
-  if (!post || post.source !== "native") {
+  if (!post) {
     notFound();
   }
 
