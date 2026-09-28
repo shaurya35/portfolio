@@ -394,6 +394,11 @@ fn score_yaml(code: &str) -> i32 {
 /// mailto: prefix and escaping, since we're replacing its default renderer
 /// for this tag rather than calling into it.
 fn link_open_tag(link_type: LinkType, dest_url: &str, title: &str) -> String {
+    if link_type != LinkType::Email && !is_safe_href(dest_url) {
+        // The text still renders; it just isn't a link to anywhere unsafe.
+        return "<a>".to_owned();
+    }
+
     let mut href = String::new();
     if link_type == LinkType::Email {
         href.push_str("mailto:");
@@ -411,6 +416,35 @@ fn link_open_tag(link_type: LinkType, dest_url: &str, title: &str) -> String {
     }
     tag.push('>');
     tag
+}
+
+/// Whether a link destination is safe to put in an href. pulldown-cmark
+/// passes `javascript:` / `data:` / `vbscript:` URLs straight through, and
+/// raw HTML being stripped doesn't help: `[x](javascript:...)` is plain
+/// Markdown. Relative URLs (no scheme) and http, https and mailto are
+/// allowed; any other scheme is not.
+fn is_safe_href(url: &str) -> bool {
+    // Browsers drop tabs and newlines anywhere in a URL and leading spaces
+    // or control characters before parsing, so "java\tscript:" still runs.
+    let cleaned: String = url
+        .chars()
+        .filter(|c| !matches!(c, '\t' | '\n' | '\r'))
+        .collect();
+    let cleaned = cleaned.trim_start_matches(|c: char| c <= ' ');
+
+    let Some(colon) = cleaned.find(':') else {
+        return true;
+    };
+    let scheme = &cleaned[..colon];
+    // A colon after a path, query or fragment character ("/a:b", "#x:y")
+    // isn't a scheme separator.
+    if scheme.contains(['/', '?', '#']) {
+        return true;
+    }
+    matches!(
+        scheme.to_ascii_lowercase().as_str(),
+        "http" | "https" | "mailto"
+    )
 }
 
 fn highlight_code_block(code: &str, lang: &str) -> String {
@@ -649,5 +683,49 @@ mod tests {
         assert!(out.contains("- The proposed payload."), "got: {out}");
         assert!(out.contains("# not a heading"), "got: {out}");
         assert!(out.contains("1. not a list"), "got: {out}");
+    }
+}
+
+#[cfg(test)]
+mod link_scheme_tests {
+    use super::*;
+
+    // Regression: ISSUE-012 — `[x](javascript:...)` rendered a live
+    // javascript: href into published post HTML.
+    // Found by /qa on 2026-09-28
+    // Report: .gstack/qa-reports/qa-report-shauryacodes-me-2026-09-28.md
+    #[test]
+    fn script_schemes_lose_their_href() {
+        for md in [
+            "[x](javascript:alert(1))",
+            "[x](JaVaScRiPt:alert(1))",
+            "[x](<java\tscript:alert(1)>)",
+            "[x](data:text/html,hi)",
+            "[x](vbscript:msgbox)",
+        ] {
+            let out = render(md);
+            assert!(!out.contains("href"), "{md} -> {out}");
+            assert!(out.contains("<a>x</a>"), "{md} -> {out}");
+        }
+    }
+
+    #[test]
+    fn ordinary_links_keep_their_href() {
+        for (md, href) in [
+            ("[x](https://example.com/a:b)", "https://example.com/a:b"),
+            ("[x](http://example.com)", "http://example.com"),
+            ("[x](/writing/post)", "/writing/post"),
+            ("[x](#section)", "#section"),
+            ("[x](mailto:me@example.com)", "mailto:me@example.com"),
+            ("[x](notes/a:b)", "notes/a:b"),
+        ] {
+            let out = render(md);
+            assert!(out.contains(&format!("href=\"{href}\"")), "{md} -> {out}");
+        }
+    }
+
+    #[test]
+    fn autolinked_emails_still_get_mailto() {
+        assert!(render("<me@example.com>").contains("href=\"mailto:me@example.com\""));
     }
 }
