@@ -7,9 +7,14 @@ export function CopyEmail({ email }: { email: string }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard access can be unavailable or denied; fail silently, like
+      // the share and code-copy buttons.
+    }
   };
 
   return (
