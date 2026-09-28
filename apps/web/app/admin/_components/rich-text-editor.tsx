@@ -500,7 +500,9 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
       // StarterKit's defaults (openOnClick) registered alongside the one
       // configured below, and clicking a link while editing opened it in
       // a new tab. Only the configured Link is registered now.
-      StarterKit.configure({ codeBlock: false, text: false, link: false }),
+      // underline: false — Markdown has no underline, so Cmd+U showed
+      // underlined text that the saved Markdown silently dropped.
+      StarterKit.configure({ codeBlock: false, text: false, link: false, underline: false }),
       TextEscapingAfterBreak,
       CodeBlock.configure({ lowlight }),
       // markdownLinks: typing or pasting `[text](url)` converts to a real
