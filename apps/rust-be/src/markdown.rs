@@ -406,7 +406,9 @@ fn link_open_tag(link_type: LinkType, dest_url: &str, title: &str) -> String {
     let _ = pulldown_cmark_escape::escape_href(&mut href, dest_url);
 
     let mut tag = format!("<a href=\"{href}\"");
-    if link_type != LinkType::Email {
+    // A "#section" link moves within this same article; in a new tab it
+    // opened a second copy of the post instead of scrolling.
+    if link_type != LinkType::Email && !dest_url.starts_with('#') {
         tag.push_str(" target=\"_blank\" rel=\"noopener noreferrer\"");
     }
     if !title.is_empty() {
@@ -707,6 +709,16 @@ mod link_scheme_tests {
             assert!(!out.contains("href"), "{md} -> {out}");
             assert!(out.contains("<a>x</a>"), "{md} -> {out}");
         }
+    }
+
+    #[test]
+    fn fragment_links_stay_in_the_same_tab() {
+        let html = render("[jump](#setup) and [out](https://example.com)");
+        assert!(html.contains(r##"<a href="#setup">jump</a>"##), "{html}");
+        assert!(
+            html.contains(r#"<a href="https://example.com" target="_blank""#),
+            "{html}"
+        );
     }
 
     #[test]
