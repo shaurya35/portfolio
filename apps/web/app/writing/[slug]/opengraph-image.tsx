@@ -1,10 +1,20 @@
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
-import { getNativePost } from "@/lib/api";
+import { getNativePost, getPosts } from "@/lib/api";
 
 export const alt = "Writing by Shaurya Jha";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// The page's generateStaticParams doesn't cover this file — an image route is
+// a Route Handler of its own, and without its own list every request for a
+// post's card (each share, each crawler) re-rendered the PNG in a function.
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts
+    .filter((post) => post.source === "native")
+    .map((post) => ({ slug: post.slug }));
+}
 
 export default async function OpenGraphImage({
   params,
