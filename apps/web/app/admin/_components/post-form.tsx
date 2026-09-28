@@ -141,6 +141,18 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
     setFormError(null);
     setSessionExpired(false);
 
+    // The field keeps a trailing "-" so it stays typeable (see its
+    // onChange); drop it here or the post lands at /writing/my-post-.
+    // Existing posts keep their slug untouched — it isn't sent on update.
+    const finalSlug = isEditing ? slug : slug.replace(/-+$/, "");
+    if (finalSlug.length === 0) {
+      setSlugError("Enter a slug.");
+      return;
+    }
+    if (finalSlug !== slug) {
+      setSlug(finalSlug);
+    }
+
     if (source === "native" && markdown.trim().length === 0) {
       setFormError("Write some content before saving.");
       return;
@@ -150,7 +162,7 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
 
     try {
       await onSubmit({
-        slug,
+        slug: finalSlug,
         title,
         description,
         category,
