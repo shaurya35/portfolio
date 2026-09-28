@@ -36,7 +36,13 @@ export function Nav() {
   // of navigating (it checks event.defaultPrevented). stopPropagation also
   // keeps LogoutButton's own onClick from firing. Only wired up in the admin
   // area — there's nothing to guard against on the public pages.
+  // Only clicks that leave the page are guarded — a link, or the logout
+  // button (marked data-leaves-page). The theme toggle and the header's
+  // empty space used to trigger the prompt too, and cancelling it swallowed
+  // the theme change.
   const guardNavigation = (event: React.MouseEvent) => {
+    const target = event.target as Element;
+    if (!target.closest("a, [data-leaves-page]")) return;
     if (!confirmNavigation()) {
       event.preventDefault();
       event.stopPropagation();

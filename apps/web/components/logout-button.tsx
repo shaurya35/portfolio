@@ -30,6 +30,7 @@ export function LogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
+      data-leaves-page
       disabled={loading}
       aria-label={loading ? "Logging out…" : "Log out"}
       title={loading ? "Logging out…" : "Log out"}
