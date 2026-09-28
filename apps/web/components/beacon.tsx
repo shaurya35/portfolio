@@ -30,7 +30,8 @@ export function Beacon() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!RUST_API_URL) return;
+    // The admin is the site owner, not a visitor.
+    if (!RUST_API_URL || pathname.startsWith("/admin")) return;
     try {
       const referrer = externalReferrer();
       const body = JSON.stringify({

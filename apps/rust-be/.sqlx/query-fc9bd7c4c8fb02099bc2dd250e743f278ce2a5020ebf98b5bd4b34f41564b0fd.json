@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT date(created_at) as \"date!\", count(*) as \"pageviews!\", count(distinct visitor_hash) as \"visitors!\"\n            FROM events\n            WHERE kind = 'pageview' AND created_at >= now() - make_interval(days => $1)\n            GROUP BY date(created_at)\n            ORDER BY date(created_at) DESC\n            ",
+  "query": "\n            SELECT date(created_at) as \"date!\", count(*) as \"pageviews!\", count(distinct visitor_hash) as \"visitors!\"\n            FROM events\n            WHERE kind = 'pageview' AND path NOT LIKE '/admin%' AND created_at >= now() - make_interval(days => $1)\n            GROUP BY date(created_at)\n            ORDER BY date(created_at) DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -33,5 +33,5 @@
       null
     ]
   },
-  "hash": "81f3d634219b670cc325a953462c80bf6136f7bf508e814d4b51dd83d3c09dde"
+  "hash": "fc9bd7c4c8fb02099bc2dd250e743f278ce2a5020ebf98b5bd4b34f41564b0fd"
 }

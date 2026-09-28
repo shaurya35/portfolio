@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT country as \"country!\", count(*) as \"count!\"\n            FROM events\n            WHERE kind = 'pageview' AND country IS NOT NULL AND created_at >= now() - make_interval(days => $1)\n            GROUP BY country\n            ORDER BY count(*) DESC\n            LIMIT 10\n            ",
+  "query": "\n            SELECT country as \"country!\", count(*) as \"count!\"\n            FROM events\n            WHERE kind = 'pageview' AND path NOT LIKE '/admin%' AND country IS NOT NULL AND created_at >= now() - make_interval(days => $1)\n            GROUP BY country\n            ORDER BY count(*) DESC\n            LIMIT 10\n            ",
   "describe": {
     "columns": [
       {
@@ -31,5 +31,5 @@
       null
     ]
   },
-  "hash": "96c5bd005e431364ca48839c6bc4bdcc746feb5ba0f954426a2b7fbad608a485"
+  "hash": "2f35416ed1dc098e19f3e420e20f68d6891c6681db44189913ddd448fa7cdf00"
 }

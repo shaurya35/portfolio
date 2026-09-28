@@ -23,13 +23,16 @@ pub(super) async fn stats(
     let Query(params) = query?;
     let days = params.days.unwrap_or(30).clamp(1, 365);
 
+    // Every pageview query skips /admin: those are the site owner working
+    // in the editor, not visitors (they were ~10% of recorded pageviews
+    // before the beacon stopped sending them).
     let (daily, top_paths, top_targets, top_referrers, countries, devices) = tokio::try_join!(
         sqlx::query_as!(
             DailyCount,
             r#"
             SELECT date(created_at) as "date!", count(*) as "pageviews!", count(distinct visitor_hash) as "visitors!"
             FROM events
-            WHERE kind = 'pageview' AND created_at >= now() - make_interval(days => $1)
+            WHERE kind = 'pageview' AND path NOT LIKE '/admin%' AND created_at >= now() - make_interval(days => $1)
             GROUP BY date(created_at)
             ORDER BY date(created_at) DESC
             "#,
@@ -44,7 +47,7 @@ pub(super) async fn stats(
                 (SELECT p.title FROM posts p WHERE '/writing/' || p.slug = e.path) as "title?",
                 count(*) as "count!"
             FROM events e
-            WHERE e.kind = 'pageview' AND e.created_at >= now() - make_interval(days => $1)
+            WHERE e.kind = 'pageview' AND e.path NOT LIKE '/admin%' AND e.created_at >= now() - make_interval(days => $1)
             GROUP BY e.path
             ORDER BY count(*) DESC
             LIMIT 10
@@ -74,7 +77,7 @@ pub(super) async fn stats(
             r#"
             SELECT referrer as "referrer!", count(*) as "count!"
             FROM events
-            WHERE kind = 'pageview' AND referrer IS NOT NULL AND referrer NOT LIKE '%://%'
+            WHERE kind = 'pageview' AND path NOT LIKE '/admin%' AND referrer IS NOT NULL AND referrer NOT LIKE '%://%'
               AND created_at >= now() - make_interval(days => $1)
             GROUP BY referrer
             ORDER BY count(*) DESC
@@ -88,7 +91,7 @@ pub(super) async fn stats(
             r#"
             SELECT country as "country!", count(*) as "count!"
             FROM events
-            WHERE kind = 'pageview' AND country IS NOT NULL AND created_at >= now() - make_interval(days => $1)
+            WHERE kind = 'pageview' AND path NOT LIKE '/admin%' AND country IS NOT NULL AND created_at >= now() - make_interval(days => $1)
             GROUP BY country
             ORDER BY count(*) DESC
             LIMIT 10
@@ -101,7 +104,7 @@ pub(super) async fn stats(
             r#"
             SELECT device as "device!", count(*) as "count!"
             FROM events
-            WHERE kind = 'pageview' AND device IS NOT NULL AND created_at >= now() - make_interval(days => $1)
+            WHERE kind = 'pageview' AND path NOT LIKE '/admin%' AND device IS NOT NULL AND created_at >= now() - make_interval(days => $1)
             GROUP BY device
             ORDER BY count(*) DESC
             LIMIT 10
