@@ -15,6 +15,12 @@ const BOT_USER_AGENT_SUBSTRINGS: &[&str] = &[
     "slurp",
     "facebookexternalhit",
     "mediapartners",
+    // Automated browsers that run the page's JavaScript, so they reach the
+    // beacon: Puppeteer/Playwright scrapers and monitors ("HeadlessChrome")
+    // and Lighthouse/PageSpeed audits ("Chrome-Lighthouse"). None of the
+    // substrings above matched them, so each run counted as a visitor.
+    "headless",
+    "lighthouse",
 ];
 
 pub struct Visitor {
@@ -98,4 +104,30 @@ fn visitor_hash(ip: &str, user_agent: &str, salt: &str) -> String {
     hasher.update(user_agent.as_bytes());
     hasher.update(salt.as_bytes());
     hasher.finalize().to_hex().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn automated_browsers_are_bots() {
+        for ua in [
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 Chrome-Lighthouse",
+            "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+        ] {
+            assert!(is_bot(&ua.to_lowercase()), "{ua}");
+        }
+    }
+
+    #[test]
+    fn real_browsers_are_not_bots() {
+        for ua in [
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+        ] {
+            assert!(!is_bot(&ua.to_lowercase()), "{ua}");
+        }
+    }
 }
