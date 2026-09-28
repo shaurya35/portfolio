@@ -13,15 +13,21 @@ export function isProductionSite(): boolean {
   return window.location.origin === SITE_URL;
 }
 
+/** Posts one analytics event to rust-be. The body is JSON, but it goes out
+ * as text/plain: a JSON Content-Type isn't CORS-safelisted, so the browser
+ * sent an OPTIONS preflight ahead of every beacon — two backend invocations
+ * per event. rust-be's /e reads the body regardless of its Content-Type. */
+export function sendEvent(event: Record<string, unknown>) {
+  navigator.sendBeacon(
+    `${RUST_API_URL}/e`,
+    new Blob([JSON.stringify(event)], { type: "text/plain" }),
+  );
+}
+
 export function trackClick(target: string) {
   if (!RUST_API_URL || !isProductionSite()) return;
   try {
-    const body = JSON.stringify({
-      kind: "click",
-      path: window.location.pathname,
-      target,
-    });
-    navigator.sendBeacon(`${RUST_API_URL}/e`, new Blob([body], { type: "application/json" }));
+    sendEvent({ kind: "click", path: window.location.pathname, target });
   } catch {
     // Analytics is best-effort; never let it break the actual click.
   }

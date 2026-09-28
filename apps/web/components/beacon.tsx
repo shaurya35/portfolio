@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { isProductionSite } from "@/lib/track-click";
+import { isProductionSite, sendEvent } from "@/lib/track-click";
 
 const RUST_API_URL = process.env.NEXT_PUBLIC_RUST_API_URL;
 
@@ -35,12 +35,7 @@ export function Beacon() {
     if (!RUST_API_URL || pathname.startsWith("/admin") || !isProductionSite()) return;
     try {
       const referrer = externalReferrer();
-      const body = JSON.stringify({
-        kind: "pageview",
-        path: pathname,
-        ...(referrer ? { referrer } : {}),
-      });
-      navigator.sendBeacon(`${RUST_API_URL}/e`, new Blob([body], { type: "application/json" }));
+      sendEvent({ kind: "pageview", path: pathname, ...(referrer ? { referrer } : {}) });
     } catch {
       return;
     }
