@@ -14,7 +14,12 @@ export function ThemeToggle() {
     const current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
     const next = current === "dark" ? "light" : "dark";
     root.setAttribute("data-theme", next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Storage blocked (privacy settings, some in-app browsers): the theme
+      // still flips for this page, it just isn't remembered.
+    }
   };
 
   return (
