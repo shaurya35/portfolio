@@ -137,3 +137,11 @@ export type Stats = {
 export function getStats(days: number): Promise<Stats> {
   return request<Stats>(`/admin/stats?days=${days}`);
 }
+
+export type PostTraffic = { slug: string; views: number; clicks: number };
+
+/** Views (native posts) and outbound clicks (X/Medium posts) per post over
+ * the last `days`, for the posts list. */
+export function getPostTraffic(days: number): Promise<PostTraffic[]> {
+  return request<PostTraffic[]>(`/admin/stats/posts?days=${days}`);
+}

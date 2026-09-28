@@ -2,12 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { type AdminPost, deletePost, getPosts } from "@/app/admin/_lib/api";
+import {
+  type AdminPost,
+  type PostTraffic,
+  deletePost,
+  getPosts,
+  getPostTraffic,
+} from "@/app/admin/_lib/api";
 import { StatusBadge } from "@/app/admin/_components/status-badge";
 import { TrashIcon } from "@/components/icons";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
 import { useSyncPublicPages } from "@/app/admin/_lib/use-sync-public-pages";
 import { useToast } from "@/components/toast";
+
+const TRAFFIC_DAYS = 30;
+
+/** "41 views" for a native post, "9 clicks" for an X/Medium one — the only
+ * traffic each kind has on this site. */
+function trafficLabel(post: AdminPost, traffic: PostTraffic | undefined): string | null {
+  if (!traffic || post.status !== "published") return null;
+  const [count, noun] =
+    post.source === "native" ? [traffic.views, "view"] : [traffic.clicks, "click"];
+  return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
+}
 
 export default function AdminPostsPage() {
   const onError = useAdminError();
@@ -17,6 +34,7 @@ export default function AdminPostsPage() {
   const [posts, setPosts] = useState<AdminPost[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [traffic, setTraffic] = useState<Map<string, PostTraffic>>(new Map());
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +55,20 @@ export default function AdminPostsPage() {
       cancelled = true;
     };
   }, [onError]);
+
+  // Separate from the list and allowed to fail quietly: the counts are a
+  // nice-to-have, and a stats hiccup must not stop the posts from loading.
+  useEffect(() => {
+    let cancelled = false;
+    getPostTraffic(TRAFFIC_DAYS)
+      .then((rows) => {
+        if (!cancelled) setTraffic(new Map(rows.map((row) => [row.slug, row])));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleDelete = async (post: AdminPost) => {
     const confirmed = window.confirm(
@@ -89,41 +121,52 @@ export default function AdminPostsPage() {
 
       {posts !== null && posts.length > 0 ? (
         <ul className="flex flex-col divide-y divide-border border-y border-border">
-          {posts.map((post) => (
-            <li
-              key={post.id}
-              className="group relative flex items-center justify-between gap-4 py-3"
-            >
-              <div className="min-w-0">
-                <Link
-                  href={`/admin/posts/${post.id}`}
-                  className="block truncate font-medium after:absolute after:inset-0"
-                >
-                  {post.title}
-                </Link>
-                <p className="mt-1 flex items-center gap-2 truncate text-xs text-muted-foreground">
-                  <StatusBadge status={post.status} />
-                  <span aria-hidden="true" className="text-border">
-                    |
-                  </span>
-                  <span className="truncate">
-                    {post.slug} · {post.category} · {post.source}
-                  </span>
-                </p>
-              </div>
-              <div className="relative z-10 flex shrink-0 items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleDelete(post)}
-                  disabled={deletingId === post.id}
-                  aria-label="Delete post"
-                  className="cursor-pointer text-muted-foreground transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <TrashIcon className="size-4" />
-                </button>
-              </div>
-            </li>
-          ))}
+          {posts.map((post) => {
+            const trafficText = trafficLabel(post, traffic.get(post.slug));
+            return (
+              <li
+                key={post.id}
+                className="group relative flex items-center justify-between gap-4 py-3"
+              >
+                <div className="min-w-0">
+                  <Link
+                    href={`/admin/posts/${post.id}`}
+                    className="block truncate font-medium after:absolute after:inset-0"
+                  >
+                    {post.title}
+                  </Link>
+                  <p className="mt-1 flex items-center gap-2 truncate text-xs text-muted-foreground">
+                    <StatusBadge status={post.status} />
+                    <span aria-hidden="true" className="text-border">
+                      |
+                    </span>
+                    <span className="truncate">
+                      {post.slug} · {post.category} · {post.source}
+                    </span>
+                    {trafficText ? (
+                      <span
+                        className="shrink-0 tabular-nums"
+                        title={`Last ${TRAFFIC_DAYS} days`}
+                      >
+                        · {trafficText}
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+                <div className="relative z-10 flex shrink-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(post)}
+                    disabled={deletingId === post.id}
+                    aria-label="Delete post"
+                    className="cursor-pointer text-muted-foreground transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <TrashIcon className="size-4" />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </section>
