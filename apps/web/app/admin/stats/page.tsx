@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getStats, type Stats } from "@/app/admin/_lib/api";
+import { type DailyCount, getStats, type Stats } from "@/app/admin/_lib/api";
 import { StatList } from "@/app/admin/_components/stat-list";
 import { useAdminError } from "@/app/admin/_lib/use-admin-error";
 
@@ -13,6 +13,27 @@ function formatDayLabel(dateStr: string): string {
   return new Date(year, month - 1, day).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
+  });
+}
+
+/**
+ * One entry per calendar day in the range, oldest first, with 0 for days
+ * that had no pageviews. The backend only returns days that have rows, so
+ * charting its list directly dropped quiet days and squeezed a month with
+ * traffic on 11 days into 11 evenly spaced bars. Dates are the backend's UTC
+ * `date(created_at)`; `now() - days` reaches back into a partial day, hence
+ * `days + 1` entries.
+ */
+function everyDay(daily: DailyCount[], days: number): DailyCount[] {
+  const byDate = new Map(daily.map((day) => [day.date, day]));
+  const now = new Date();
+  return Array.from({ length: days + 1 }, (_, index) => {
+    const date = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (days - index)),
+    )
+      .toISOString()
+      .slice(0, 10);
+    return byDate.get(date) ?? { date, pageviews: 0, visitors: 0 };
   });
 }
 
@@ -71,6 +92,11 @@ export default function AdminStatsPage() {
       { pageviews: 0, visitors: 0 },
     );
   }, [stats]);
+
+  const chartDays = useMemo(
+    () => (stats ? everyDay(stats.daily, days) : []),
+    [stats, days],
+  );
 
   const maxDailyPageviews = useMemo(
     () => Math.max(1, ...(stats?.daily.map((d) => d.pageviews) ?? [0])),
@@ -143,7 +169,7 @@ export default function AdminStatsPage() {
               <p className="text-sm text-muted-foreground">No data yet.</p>
             ) : (
               <div className="flex h-24 items-stretch gap-0.5">
-                {[...stats.daily].reverse().map((day) => (
+                {chartDays.map((day) => (
                   <div
                     key={day.date}
                     onMouseEnter={() => setHoveredDate(day.date)}
@@ -162,7 +188,10 @@ export default function AdminStatsPage() {
                     <div
                       className="absolute inset-x-0 bottom-0 rounded-t-sm bg-foreground/15 transition-colors hover:bg-foreground/30"
                       style={{
-                        height: `${Math.max(4, (day.pageviews / maxDailyPageviews) * 100)}%`,
+                        height:
+                          day.pageviews === 0
+                            ? 0
+                            : `${Math.max(4, (day.pageviews / maxDailyPageviews) * 100)}%`,
                       }}
                     />
                   </div>
