@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Source_Serif_4 } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { InlineScript } from "@/components/inline-script";
 import { Beacon } from "@/components/beacon";
+import { VercelInsights } from "@/components/vercel-insights";
 import { ToastProvider } from "@/components/toast";
 import { UnsavedChangesProvider } from "@/lib/use-unsaved-changes";
 import { site, SITE_URL, SITE_DESCRIPTION } from "@/content/site";
@@ -109,8 +108,7 @@ export default function RootLayout({
           </UnsavedChangesProvider>
         </ToastProvider>
         <Footer />
-        <Analytics />
-        <SpeedInsights />
+        <VercelInsights />
         <Beacon />
       </body>
     </html>
