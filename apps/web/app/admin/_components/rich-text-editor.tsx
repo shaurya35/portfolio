@@ -164,6 +164,10 @@ type TextSerializerState = {
 // line-start, so it gets the same escaping as the first line of a block.
 // renderInline resets atBlockStart after every node, so setting it here only
 // affects this one text node.
+// "[^1]" (a reference) or "[^note]:" (a definition). Captured so split()
+// keeps the markers at the odd indexes.
+const FOOTNOTE_MARKER = /(\[\^[\w-]+\]:?)/;
+
 const TextEscapingAfterBreak = Node.create({
   name: "text",
   group: "inline",
@@ -175,7 +179,16 @@ const TextEscapingAfterBreak = Node.create({
             state.atBlockStart = true;
           }
           // Same HTML escaping tiptap-markdown's default text serializer does.
-          state.text(node.text.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+          const html = node.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          // Footnotes: the site renders them (pulldown-cmark), but the editor
+          // has no footnote node, so "[^1]" is plain text here and the
+          // default escaping saved it as "\[^1\]", which published as the
+          // literal characters. The reference and definition markers are
+          // written through unescaped; everything around them is escaped
+          // as usual.
+          html.split(FOOTNOTE_MARKER).forEach((part, index) => {
+            if (part) state.text(part, index % 2 === 0);
+          });
         },
       },
     };

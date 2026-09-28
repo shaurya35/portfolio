@@ -712,6 +712,15 @@ mod link_scheme_tests {
     }
 
     #[test]
+    fn footnotes_as_the_editor_saves_them_render() {
+        // The admin editor writes footnote markers through unescaped.
+        let html = render("Claim.[^1]\n\n[^1]: The note.");
+        assert!(html.contains("footnote-reference"), "{html}");
+        assert!(html.contains("footnote-definition"), "{html}");
+        assert!(!html.contains("[^1]"), "{html}");
+    }
+
+    #[test]
     fn fragment_links_stay_in_the_same_tab() {
         let html = render("[jump](#setup) and [out](https://example.com)");
         assert!(html.contains(r##"<a href="#setup">jump</a>"##), "{html}");
