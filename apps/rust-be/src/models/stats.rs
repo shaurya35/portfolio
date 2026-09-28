@@ -41,6 +41,17 @@ pub struct DeviceCount {
     pub count: i64,
 }
 
+/// Per-post traffic for the admin posts list. `views` counts pageviews of
+/// the post's own page (native posts); `clicks` counts opens of an X or
+/// Medium post from the site's writing lists (the `post:<slug>` click
+/// target), since those posts have no page here to view.
+#[derive(Debug, Serialize)]
+pub struct PostTraffic {
+    pub slug: String,
+    pub views: i64,
+    pub clicks: i64,
+}
+
 #[derive(Debug, Serialize)]
 pub struct Stats {
     pub daily: Vec<DailyCount>,

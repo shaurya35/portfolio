@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            p.slug as \"slug!\",\n            count(e.id) FILTER (WHERE e.kind = 'pageview') as \"views!\",\n            count(e.id) FILTER (WHERE e.kind = 'click') as \"clicks!\"\n        FROM posts p\n        LEFT JOIN events e\n            ON e.created_at >= now() - make_interval(days => $1)\n            AND (\n                (e.kind = 'pageview' AND e.path = '/writing/' || p.slug)\n                OR (e.kind = 'click' AND e.target = 'post:' || p.slug)\n            )\n        GROUP BY p.slug\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "slug!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "posts",
+            "name": "slug"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "views!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "clicks!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "2f024adb2791616b02a72d2f1edae81fd45d14456e58927946b640899a283830"
+}

@@ -6,7 +6,8 @@ use serde::Deserialize;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
 use crate::models::stats::{
-    CountryCount, DailyCount, DeviceCount, PathCount, ReferrerCount, Stats, TargetCount,
+    CountryCount, DailyCount, DeviceCount, PathCount, PostTraffic, ReferrerCount, Stats,
+    TargetCount,
 };
 use crate::state::AppState;
 
@@ -122,4 +123,39 @@ pub(super) async fn stats(
         countries,
         devices,
     }))
+}
+
+/// Views (or, for link posts, outbound clicks) per post over the last
+/// `days`, for the admin posts list. One pass over the window's events,
+/// matched to each post by its page path or click target.
+pub(super) async fn post_traffic(
+    State(state): State<AppState>,
+    _admin: Admin,
+    query: Result<Query<StatsQuery>, QueryRejection>,
+) -> Result<Json<Vec<PostTraffic>>, AppError> {
+    let Query(params) = query?;
+    let days = params.days.unwrap_or(30).clamp(1, 365);
+
+    let rows = sqlx::query_as!(
+        PostTraffic,
+        r#"
+        SELECT
+            p.slug as "slug!",
+            count(e.id) FILTER (WHERE e.kind = 'pageview') as "views!",
+            count(e.id) FILTER (WHERE e.kind = 'click') as "clicks!"
+        FROM posts p
+        LEFT JOIN events e
+            ON e.created_at >= now() - make_interval(days => $1)
+            AND (
+                (e.kind = 'pageview' AND e.path = '/writing/' || p.slug)
+                OR (e.kind = 'click' AND e.target = 'post:' || p.slug)
+            )
+        GROUP BY p.slug
+        "#,
+        days
+    )
+    .fetch_all(&state.pool)
+    .await?;
+
+    Ok(Json(rows))
 }

@@ -23,6 +23,7 @@ pub fn router() -> Router<AppState> {
             get(admin::get).patch(admin::update).delete(admin::delete),
         )
         .route("/admin/stats", get(stats::stats))
+        .route("/admin/stats/posts", get(stats::post_traffic))
         .route(
             "/e",
             post(events::create).layer(DefaultBodyLimit::max(events::MAX_BODY_BYTES)),
