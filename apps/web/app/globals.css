@@ -8,7 +8,10 @@
   --background: #f9f9f9;
   --foreground: #100f0f;
   --muted: #f5f5f5;
-  --muted-foreground: #737373;
+  /* #737373 was 4.50:1 on the page and 4.35:1 on --muted, under WCAG AA
+     for the small muted text on muted surfaces (project filter pills,
+     footer). */
+  --muted-foreground: #6b6b6b;
   --border: #e5e5e5;
   --accent: #2563eb;
   --destructive: #dc2626;
