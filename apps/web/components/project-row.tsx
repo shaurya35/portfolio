@@ -39,11 +39,17 @@ export function ProjectRow({ project }: { project: Project }) {
   return (
     <article className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div className="group flex min-w-0 flex-1 items-start gap-3">
+        {/* A bigger mouse target for the same link as the title beside it.
+            Its image is decorative (alt=""), so to a screen reader or the
+            Tab key it was an extra, nameless link announced as a bare URL;
+            it's hidden from both, and the title link carries the name. */}
         <TrackedLink
           trackTarget={primaryTarget}
           href={primaryHref}
           target="_blank"
           rel="noreferrer"
+          tabIndex={-1}
+          aria-hidden="true"
           className="shrink-0"
         >
           <ProjectThumb title={project.title} image={project.image} />
