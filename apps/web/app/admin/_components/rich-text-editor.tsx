@@ -496,7 +496,11 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
 
   const extensions = useMemo(
     () => [
-      StarterKit.configure({ codeBlock: false, text: false }),
+      // link: false — StarterKit v3 bundles its own Link, so there were two:
+      // StarterKit's defaults (openOnClick) registered alongside the one
+      // configured below, and clicking a link while editing opened it in
+      // a new tab. Only the configured Link is registered now.
+      StarterKit.configure({ codeBlock: false, text: false, link: false }),
       TextEscapingAfterBreak,
       CodeBlock.configure({ lowlight }),
       // markdownLinks: typing or pasting `[text](url)` converts to a real
