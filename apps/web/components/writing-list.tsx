@@ -34,9 +34,11 @@ export function WritingList({ writings }: { writings: Writing[] }) {
           const isNative = post.source === "native";
           const content = (
             <>
-              <h3 className="text-lg leading-snug font-semibold max-sm:line-clamp-2 sm:truncate transition-colors group-hover:text-accent">
+              {/* h2: this list sits directly under the /writing page's h1
+                  (h3 skipped a level for screen-reader heading navigation). */}
+              <h2 className="text-lg leading-snug font-semibold max-sm:line-clamp-2 sm:truncate transition-colors group-hover:text-accent">
                 {post.title}
-              </h3>
+              </h2>
               <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
                 {post.description}
               </p>
