@@ -55,7 +55,9 @@ export function ProjectRow({ project }: { project: Project }) {
           <ProjectThumb title={project.title} image={project.image} />
         </TrackedLink>
         <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex items-baseline justify-between gap-3 sm:block">
+          {/* flex-wrap: at 320px a one-word title like "ITERConnect" can't
+              shrink, and the Live/Code links beside it ran off the screen. */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 sm:block">
             <TrackedLink
               trackTarget={primaryTarget}
               href={primaryHref}
