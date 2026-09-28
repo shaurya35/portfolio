@@ -16,7 +16,7 @@ export const projects: Project[] = [
     title: "Upbot",
     description:
       "Distributed monitoring prototype: worker-pusher architecture on Redis Streams, running health checks across 15+ global regions.",
-    tech: ["Next.js", "Redis", "Express"],
+    tech: ["Next.js", "Redis", "Express.js"],
     liveHref: "https://www.upbot.space/",
     githubHref: "https://github.com/shaurya35/upbot",
     image: "/projects/upbot.jpg",
@@ -26,7 +26,7 @@ export const projects: Project[] = [
     title: "ITERConnect",
     description:
       "Campus developer-networking platform built with a 7-person team. 250+ active users, 10+ alumni.",
-    tech: ["Next.js", "Firebase", "Express"],
+    tech: ["Next.js", "Firebase", "Express.js"],
     liveHref: "https://www.iterconnect.com/",
     githubHref: "https://github.com/shaurya35/ITER-Social-Connect",
     image: "/projects/iterconnect.jpg",
