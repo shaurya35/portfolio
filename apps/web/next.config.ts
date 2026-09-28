@@ -7,6 +7,10 @@ function socialHref(name: string) {
 }
 
 const nextConfig: NextConfig = {
+  // The end-to-end suite builds into its own directory (see
+  // playwright.config.ts) so it never mixes with, or reuses the fetch cache
+  // of, a dev or production build in .next.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Nothing on this site is meant to be embedded, and /admin must not be:
   // framed invisibly on another page, its login form and delete buttons
   // could be clickjacked. frame-ancestors is the modern control;
