@@ -1,4 +1,5 @@
 use axum::Router;
+use axum::extract::DefaultBodyLimit;
 use axum::routing::{get, post};
 
 mod admin;
@@ -22,5 +23,8 @@ pub fn router() -> Router<AppState> {
             get(admin::get).patch(admin::update).delete(admin::delete),
         )
         .route("/admin/stats", get(stats::stats))
-        .route("/e", post(events::create))
+        .route(
+            "/e",
+            post(events::create).layer(DefaultBodyLimit::max(events::MAX_BODY_BYTES)),
+        )
 }

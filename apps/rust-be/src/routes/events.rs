@@ -10,6 +10,17 @@ use crate::state::AppState;
 /// The longest a DNS hostname can be.
 const MAX_REFERRER_LEN: usize = 253;
 
+/// Far above anything the site sends (a pathname like /writing/<slug>, a
+/// target like project:<slug>:github). /e is public and unauthenticated, so
+/// without a cap anyone could store arbitrarily large strings in the events
+/// table, 120 requests a minute per IP.
+const MAX_PATH_LEN: usize = 512;
+const MAX_TARGET_LEN: usize = 256;
+
+/// The whole request body, enforced at the router (see routes/mod.rs):
+/// every field is capped above, so a real event is a few hundred bytes.
+pub const MAX_BODY_BYTES: usize = 4 * 1024;
+
 pub async fn create(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -31,6 +42,17 @@ pub async fn create(
 
     let body: NewEventBody = serde_json::from_slice(&body)
         .map_err(|err| AppError::BadRequest(format!("invalid event body: {err}")))?;
+
+    if !body.path.starts_with('/') || body.path.len() > MAX_PATH_LEN {
+        return Err(AppError::BadRequest("invalid path".to_owned()));
+    }
+    if body
+        .target
+        .as_ref()
+        .is_some_and(|target| target.len() > MAX_TARGET_LEN)
+    {
+        return Err(AppError::BadRequest("invalid target".to_owned()));
+    }
 
     // A hostname is all the stats page shows; anything else (empty, or
     // something far too long to be one) is dropped rather than stored.
