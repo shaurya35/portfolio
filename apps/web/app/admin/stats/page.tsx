@@ -153,11 +153,18 @@ export default function AdminStatsPage() {
               </p>
               <p className="text-xs text-muted-foreground">Pageviews</p>
             </div>
+            {/* An average, not a total: the visitor hash rotates daily, so
+                each day's count is unique but summing them counted someone
+                who came back on 10 days as 10 "visitors". */}
             <div>
               <p className="text-2xl font-bold tabular-nums">
-                {totals?.visitors.toLocaleString()}
+                {totals && chartDays.length > 0
+                  ? (totals.visitors / chartDays.length).toLocaleString(undefined, {
+                      maximumFractionDigits: 1,
+                    })
+                  : 0}
               </p>
-              <p className="text-xs text-muted-foreground">Visitors</p>
+              <p className="text-xs text-muted-foreground">Visitors / day</p>
             </div>
           </div>
 
