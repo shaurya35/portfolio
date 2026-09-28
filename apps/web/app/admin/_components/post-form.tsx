@@ -161,6 +161,20 @@ export function PostForm({ initial, submitLabel, onSubmit, previewHref }: PostFo
       return;
     }
 
+    // Saving a native post as an X/Medium link sends no markdown, and the
+    // backend stores the source's own shape — the written article is gone
+    // for good, with nothing on screen saying so.
+    if (
+      baseline.current.source === "native" &&
+      source !== "native" &&
+      baseline.current.markdown.trim().length > 0 &&
+      !window.confirm(
+        "Saving this as a link post permanently deletes its written content. Save anyway?",
+      )
+    ) {
+      return;
+    }
+
     setSaving(true);
 
     try {
