@@ -73,7 +73,11 @@ async fn main() {
         .allow_origin(allowed_origin)
         .allow_credentials(true)
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_headers([header::CONTENT_TYPE]);
+        .allow_headers([header::CONTENT_TYPE])
+        // Without this a browser re-sends the OPTIONS preflight for every
+        // admin write after ~5s, and each one is a function invocation
+        // (often a cold start). Browsers cap it anyway (Chrome at 2 hours).
+        .max_age(Duration::from_secs(2 * 60 * 60));
 
     let app = routes::router().with_state(state).layer(cors);
 

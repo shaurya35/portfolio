@@ -52,11 +52,14 @@ export function isUnauthorized(err: unknown): err is ApiRequestError {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  // Content-Type only when there's a body: it isn't a CORS-safelisted
+  // value, so sending it on a plain GET turned every admin read into two
+  // rust-be invocations (an OPTIONS preflight, then the request).
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: "include",
     headers: {
-      "content-type": "application/json",
+      ...(init?.body != null ? { "content-type": "application/json" } : {}),
       ...init?.headers,
     },
   });
