@@ -24,6 +24,7 @@ blake3 = "1.8.6"
 rand = "0.10.2"
 tower-http = { version = "0.6.11", features = ["cors"] }
 syntect = "5.3.0"
+serde_json = "1"
 
 # Cold starts are billed as Active CPU on Vercel and this binary is loaded
 # on nearly every one of them, so the size of the artifact is a running cost,
@@ -36,5 +37,3 @@ strip = true
 lto = "thin"
 codegen-units = 1
 
-[dev-dependencies]
-serde_json = "1"

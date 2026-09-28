@@ -1,6 +1,5 @@
-use axum::Json;
+use axum::body::Bytes;
 use axum::extract::State;
-use axum::extract::rejection::JsonRejection;
 use axum::http::{HeaderMap, StatusCode};
 
 use crate::error::AppError;
@@ -15,12 +14,14 @@ pub async fn create(
     State(state): State<AppState>,
     headers: HeaderMap,
     visitor: Visitor,
-    body: Result<Json<NewEventBody>, JsonRejection>,
+    // Raw bytes rather than `Json`, which insists on a JSON Content-Type:
+    // the site's beacons send `text/plain` on purpose. A JSON Content-Type
+    // isn't CORS-safelisted, so the browser sent an OPTIONS preflight ahead
+    // of every pageview and click — two function invocations (each a
+    // possible cold start) per event instead of one.
+    body: Bytes,
 ) -> Result<StatusCode, AppError> {
     if visitor.is_bot {
-        // Drains the body even for a dropped event, so the client doesn't
-        // see a connection-reset instead of the 204 it expects.
-        let _ = body;
         return Ok(StatusCode::NO_CONTENT);
     }
 
@@ -28,7 +29,8 @@ pub async fn create(
         return Err(AppError::TooManyRequests);
     }
 
-    let Json(body) = body?;
+    let body: NewEventBody = serde_json::from_slice(&body)
+        .map_err(|err| AppError::BadRequest(format!("invalid event body: {err}")))?;
 
     // A hostname is all the stats page shows; anything else (empty, or
     // something far too long to be one) is dropped rather than stored.
