@@ -3,6 +3,7 @@ import { site } from "@/content/site";
 import { socials } from "@/content/socials";
 import { socialIcons } from "@/components/icons";
 import { TrackedLink } from "@/components/tracked-link";
+import { CurrentYear } from "@/components/current-year";
 
 const navigate = [
   { label: "Home", href: "/" },
@@ -12,8 +13,6 @@ const navigate = [
 ];
 
 export function Footer() {
-  const year = new Date().getFullYear();
-
   return (
     <footer className="mt-auto border-t border-border bg-muted/30 text-sm">
       <div className="mx-auto max-w-2xl px-4 py-12">
@@ -66,7 +65,7 @@ export function Footer() {
         </div>
 
         <p className="mt-8 text-xs text-muted-foreground">
-          © {year} {site.name}. All rights reserved.
+          © <CurrentYear serverYear={new Date().getFullYear()} /> {site.name}. All rights reserved.
         </p>
       </div>
     </footer>
