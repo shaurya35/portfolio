@@ -8,6 +8,9 @@ use crate::extractors::visitor::{Visitor, client_ip};
 use crate::models::event::NewEventBody;
 use crate::state::AppState;
 
+/// The longest a DNS hostname can be.
+const MAX_REFERRER_LEN: usize = 253;
+
 pub async fn create(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -27,6 +30,14 @@ pub async fn create(
 
     let Json(body) = body?;
 
+    // A hostname is all the stats page shows; anything else (empty, or
+    // something far too long to be one) is dropped rather than stored.
+    let referrer = body
+        .referrer
+        .as_deref()
+        .map(str::trim)
+        .filter(|host| !host.is_empty() && host.len() <= MAX_REFERRER_LEN);
+
     sqlx::query!(
         r#"
         INSERT INTO events (kind, path, target, referrer, country, device, visitor_hash)
@@ -35,7 +46,7 @@ pub async fn create(
         body.kind.as_str(),
         body.path,
         body.target,
-        visitor.referrer,
+        referrer,
         visitor.country,
         visitor.device,
         visitor.visitor_hash,

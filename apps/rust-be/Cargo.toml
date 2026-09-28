@@ -35,3 +35,6 @@ syntect = "5.3.0"
 strip = true
 lto = "thin"
 codegen-units = 1
+
+[dev-dependencies]
+serde_json = "1"

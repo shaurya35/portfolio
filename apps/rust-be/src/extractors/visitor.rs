@@ -19,7 +19,6 @@ const BOT_USER_AGENT_SUBSTRINGS: &[&str] = &[
 
 pub struct Visitor {
     pub visitor_hash: String,
-    pub referrer: Option<String>,
     pub country: Option<String>,
     pub device: &'static str,
     pub is_bot: bool,
@@ -39,7 +38,6 @@ impl FromRequestParts<AppState> for Visitor {
 
         Ok(Visitor {
             visitor_hash: visitor_hash(ip, user_agent, &salt),
-            referrer: header_value(&parts.headers, "referer").map(str::to_owned),
             country: client_country(&parts.headers).map(str::to_owned),
             device: device(&lowered_user_agent),
             is_bot: is_bot(&lowered_user_agent),

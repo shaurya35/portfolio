@@ -65,12 +65,17 @@ pub(super) async fn stats(
             days
         )
         .fetch_all(&state.pool),
+        // Rows with a scheme ("https://www.shauryacodes.me/") predate
+        // referrers coming from the page: they held the beacon request's own
+        // Referer, i.e. this site, never where a visitor actually came from.
+        // Current rows are bare hostnames, so this skips only the old ones.
         sqlx::query_as!(
             ReferrerCount,
             r#"
             SELECT referrer as "referrer!", count(*) as "count!"
             FROM events
-            WHERE kind = 'pageview' AND referrer IS NOT NULL AND created_at >= now() - make_interval(days => $1)
+            WHERE kind = 'pageview' AND referrer IS NOT NULL AND referrer NOT LIKE '%://%'
+              AND created_at >= now() - make_interval(days => $1)
             GROUP BY referrer
             ORDER BY count(*) DESC
             LIMIT 10
