@@ -195,6 +195,24 @@ function ToolbarButton({
   );
 }
 
+/**
+ * "example.com" typed into the Link or Image prompt was saved as-is — a
+ * relative URL, which on the published post resolves against the post's own
+ * address (/writing/example.com, a 404). A bare email address becomes a
+ * mailto: link and anything else without a scheme gets https://. Already
+ * absolute ("https:", "mailto:") and in-site ("/", "#", "?") URLs are left
+ * alone.
+ */
+function withScheme(url: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(url) || /^[/#?]/.test(url)) {
+    return url;
+  }
+  if (/^[^\s@/]+@[^\s@/]+\.[^\s@/]+$/.test(url)) {
+    return `mailto:${url}`;
+  }
+  return `https://${url}`;
+}
+
 function UrlPrompt({
   placeholder,
   onSubmit,
@@ -208,7 +226,7 @@ function UrlPrompt({
 
   const submit = () => {
     if (value.trim().length > 0) {
-      onSubmit(value.trim());
+      onSubmit(withScheme(value.trim()));
     }
   };
 
