@@ -490,7 +490,14 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
         openOnClick: false,
         markdownLinks: true,
       }),
-      Image,
+      // inline: tiptap-markdown writes an image with prosemirror-markdown's
+      // inline serializer (no block break after it). As a block node, an
+      // image on its own line came back out glued to the next paragraph
+      // ("![](a.png)Next paragraph…"), so every save of a post with an image
+      // merged the two: the image lost its own paragraph and the figure
+      // styling that depends on it. Inline, it stays inside the paragraph
+      // Markdown already gives it, and round-trips unchanged.
+      Image.configure({ inline: true }),
       Placeholder.configure({ placeholder: "Write your post…" }),
       // transformPastedText: plain text pasted in (a draft from a notes app
       // or a .md file) is parsed as Markdown. Without it "## Heading" and
