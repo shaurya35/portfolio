@@ -356,6 +356,39 @@ input:-webkit-autofill:focus {
   padding-left: 1.25rem;
 }
 
+/* Task lists: the checkbox is the marker, so no bullet beside it. The site
+   gets pulldown-cmark's `<li><input type="checkbox"> text</li>`; the editor
+   gets tiptap's `<li data-type="taskItem"><label>…</label><div>…</div>`. */
+.post-content li:has(> input[type="checkbox"]:first-child),
+.post-content ul[data-type="taskList"] > li {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+
+.post-content li > input[type="checkbox"]:first-child {
+  margin-right: 0.5rem;
+}
+
+.post-content ul[data-type="taskList"] > li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.post-content ul[data-type="taskList"] > li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The editor wraps table cell and task item text in a <p>; the rendered
+   post doesn't. Without this each cell or item got a paragraph's top
+   margin in the editor only. */
+.post-content ul[data-type="taskList"] > li > div > p:first-child,
+.post-content td > p:first-child,
+.post-content th > p:first-child {
+  margin-top: 0;
+}
+
 .post-content img {
   display: block;
   width: 100%;

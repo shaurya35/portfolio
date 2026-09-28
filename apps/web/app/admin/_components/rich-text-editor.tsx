@@ -11,12 +11,34 @@ import {
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
+import { TableKit } from "@tiptap/extension-table";
 import Placeholder from "@tiptap/extension-placeholder";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
 import { Markdown, type MarkdownStorage } from "tiptap-markdown";
 
 const lowlight = createLowlight(common);
+
+// tiptap-markdown only gives bullet and ordered lists the `tight` attribute
+// its list serializer reads, so a task list always came back loose — a
+// blank line between every "- [ ]" item, and each item wrapped in its own
+// paragraph on the site. Same attribute, same parsing rule as theirs.
+const TightTaskList = TaskList.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      tight: {
+        default: true,
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-tight") === "true" || !element.querySelector("p"),
+        renderHTML: (attributes: { tight?: boolean }) => ({
+          "data-tight": attributes.tight ? "true" : null,
+        }),
+      },
+    };
+  },
+});
 
 // CodeBlockLowlight only uses lowlight.highlightAuto() to decorate the editor
 // view — it never writes the detected language back onto the node. Left
@@ -498,6 +520,15 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
       // styling that depends on it. Inline, it stays inside the paragraph
       // Markdown already gives it, and round-trips unchanged.
       Image.configure({ inline: true }),
+      // Tables and task lists render on the site (rust-be enables both in
+      // pulldown-cmark), but without these nodes the editor had nowhere to
+      // put them: opening a post and saving it flattened a table to its
+      // cell text run together ("AB12") and escaped "- [ ] item" to
+      // "\- \[ \] item", and a pasted Markdown table was flattened the same
+      // way. tiptap-markdown serializes both once the nodes exist.
+      TableKit.configure({ table: { resizable: false } }),
+      TightTaskList,
+      TaskItem.configure({ nested: true }),
       Placeholder.configure({ placeholder: "Write your post…" }),
       // transformPastedText: plain text pasted in (a draft from a notes app
       // or a .md file) is parsed as Markdown. Without it "## Heading" and
