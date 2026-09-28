@@ -35,7 +35,15 @@ function toRfc822(date: string): string {
 
 export async function GET() {
   const posts = await getPosts();
-  const latest = posts[0]?.updatedAt ?? posts[0]?.date ?? "1970-01-01T00:00:00.000Z";
+  // The newest change to any item, not the newest post's: posts are ordered
+  // by publish date, so an edit to an older post left this unchanged.
+  const latest = posts.reduce(
+    (max, post) => {
+      const changed = post.updatedAt ?? post.date;
+      return Date.parse(changed) > Date.parse(max) ? changed : max;
+    },
+    "1970-01-01T00:00:00.000Z",
+  );
   const items = posts
     .map((post) => {
       const url =
