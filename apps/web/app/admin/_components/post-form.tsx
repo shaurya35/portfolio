@@ -47,6 +47,9 @@ function slugify(value: string): string {
   return value
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
+    // Apostrophes join rather than separate: "What I've Learned" is
+    // what-ive-learned, not what-i-ve-learned.
+    .replace(/['\u2019]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
