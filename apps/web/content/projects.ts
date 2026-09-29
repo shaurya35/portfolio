@@ -32,16 +32,6 @@ export const projects: Project[] = [
     image: "/projects/iterconnect.jpg",
   },
   {
-    slug: "web-wallet",
-    title: "Web Wallet",
-    description:
-      "A minimal crypto wallet to generate seed phrases and derivation paths.",
-    tech: ["Solana Web3.js", "Ethers.js"],
-    liveHref: "https://webwallet.shauryacodes.me/",
-    githubHref: "https://github.com/shaurya35/solana-web-wallet",
-    image: "/projects/web-wallet.jpg",
-  },
-  {
     slug: "solana-realtime-indexer",
     title: "Solana Realtime Indexer",
     description:
@@ -49,42 +39,6 @@ export const projects: Project[] = [
     tech: ["Rust", "Carbon", "Yellowstone gRPC"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/solana-realtime-indexer",
-  },
-  {
-    slug: "sol-staking-program",
-    title: "SOL Staking Program",
-    description:
-      "An Anchor program to stake SOL in a PDA and earn time-based reward points.",
-    tech: ["Rust", "Anchor", "Solana"],
-    liveHref: null,
-    githubHref: "https://github.com/shaurya35/staking-smart-contract",
-  },
-  {
-    slug: "token-liquidity-creator",
-    title: "Token Liquidity Creator",
-    description:
-      "Solana launchpad to create, mint tokens, and add CP liquidity pools.",
-    tech: ["React", "Solana", "Web3.js"],
-    liveHref: null,
-    githubHref: "https://github.com/shaurya35/Token-Liquidity-Creator",
-  },
-  {
-    slug: "ethereum-wallet-adapter",
-    title: "Ethereum Wallet Adapter",
-    description:
-      "Ethereum wallet connector to interact with ERC-20 contracts on-chain.",
-    tech: ["TypeScript", "Wagmi", "Viem"],
-    liveHref: null,
-    githubHref: "https://github.com/shaurya35/Ethereum-wallet-adapter",
-  },
-  {
-    slug: "rust-password-manager",
-    title: "Rust Password Manager",
-    description:
-      "CLI password manager built in Rust with Actix-web and Docker.",
-    tech: ["Rust", "Actix-web", "Docker"],
-    liveHref: null,
-    githubHref: "https://github.com/shaurya35/Rust-PM-be",
   },
   {
     slug: "philips-greenheart",
@@ -106,23 +60,32 @@ export const projects: Project[] = [
     image: "/projects/brixline.jpg",
   },
   {
-    slug: "gobrix",
-    title: "Gobrix",
+    slug: "web-wallet",
+    title: "Web Wallet",
     description:
-      "Gobrix is a tech-enabled Construction-as-a-Service Company (Ex-@Brixline).",
-    tech: ["Next.js", "TypeScript"],
-    liveHref: "https://brixline-client-main.vercel.app/",
-    githubHref: "https://github.com/shaurya35/brixline",
-    image: "/projects/gobrix.jpg",
+      "A minimal crypto wallet to generate seed phrases and derivation paths.",
+    tech: ["Solana Web3.js", "Ethers.js"],
+    liveHref: "https://webwallet.shauryacodes.me/",
+    githubHref: "https://github.com/shaurya35/solana-web-wallet",
+    image: "/projects/web-wallet.jpg",
   },
   {
-    slug: "xora",
-    title: "Xora",
-    description: "A modern, responsive frontend UI project with Tailwind.",
-    tech: ["Next.js", "Tailwind"],
-    liveHref: "https://xora-saas-three.vercel.app/",
-    githubHref: "https://github.com/shaurya35/xora-saas",
-    image: "/projects/xora.jpg",
+    slug: "sol-staking-program",
+    title: "SOL Staking Program",
+    description:
+      "An Anchor program to stake SOL in a PDA and earn time-based reward points.",
+    tech: ["Rust", "Anchor", "Solana"],
+    liveHref: null,
+    githubHref: "https://github.com/shaurya35/staking-smart-contract",
+  },
+  {
+    slug: "exness",
+    title: "Exness",
+    description:
+      "Trading platform with auth, trade management, and a poller service.",
+    tech: ["Next.js", "TypeScript", "Prisma"],
+    liveHref: null,
+    githubHref: "https://github.com/shaurya35/exness",
   },
   {
     slug: "stockwise",
@@ -133,6 +96,33 @@ export const projects: Project[] = [
     liveHref: "https://stockwise-omega.vercel.app/",
     githubHref: "https://github.com/shaurya35/Stockwise-Inventory-Manager",
     image: "/projects/stockwise.jpg",
+  },
+  {
+    slug: "token-liquidity-creator",
+    title: "Token Liquidity Creator",
+    description:
+      "Solana launchpad to create, mint tokens, and add CP liquidity pools.",
+    tech: ["React", "Solana", "Web3.js"],
+    liveHref: null,
+    githubHref: "https://github.com/shaurya35/Token-Liquidity-Creator",
+  },
+  {
+    slug: "dpin-uptime",
+    title: "DPIN Uptime",
+    description:
+      "Uptime monitoring with API, hub, and validator microservices.",
+    tech: ["Next.js", "TypeScript", "Node.js"],
+    liveHref: null,
+    githubHref: "https://github.com/shaurya35/dpin-uptime",
+  },
+  {
+    slug: "rust-password-manager",
+    title: "Rust Password Manager",
+    description:
+      "CLI password manager built in Rust with Actix-web and Docker.",
+    tech: ["Rust", "Actix-web", "Docker"],
+    liveHref: null,
+    githubHref: "https://github.com/shaurya35/Rust-PM-be",
   },
   {
     slug: "greenglide",
@@ -155,22 +145,23 @@ export const projects: Project[] = [
     githubHref: "https://github.com/shaurya35/E-Learning-Platform",
   },
   {
-    slug: "dpin-uptime",
-    title: "DPIN Uptime",
+    slug: "gobrix",
+    title: "Gobrix",
     description:
-      "Uptime monitoring with API, hub, and validator microservices.",
-    tech: ["Next.js", "TypeScript", "Node.js"],
-    liveHref: null,
-    githubHref: "https://github.com/shaurya35/dpin-uptime",
+      "Gobrix is a tech-enabled Construction-as-a-Service Company (Ex-@Brixline).",
+    tech: ["Next.js", "TypeScript"],
+    liveHref: "https://brixline-client-main.vercel.app/",
+    githubHref: "https://github.com/shaurya35/brixline",
+    image: "/projects/gobrix.jpg",
   },
   {
-    slug: "exness",
-    title: "Exness",
+    slug: "ethereum-wallet-adapter",
+    title: "Ethereum Wallet Adapter",
     description:
-      "Trading platform with auth, trade management, and a poller service.",
-    tech: ["Next.js", "TypeScript", "Prisma"],
+      "Ethereum wallet connector to interact with ERC-20 contracts on-chain.",
+    tech: ["TypeScript", "Wagmi", "Viem"],
     liveHref: null,
-    githubHref: "https://github.com/shaurya35/exness",
+    githubHref: "https://github.com/shaurya35/Ethereum-wallet-adapter",
   },
   {
     slug: "interactive-calendar",
@@ -180,5 +171,14 @@ export const projects: Project[] = [
     liveHref: null,
     githubHref: "https://github.com/shaurya35/Interactive-Nextjs-Calendar",
     image: "/projects/interactive-calendar.jpg",
+  },
+  {
+    slug: "xora",
+    title: "Xora",
+    description: "A modern, responsive frontend UI project with Tailwind.",
+    tech: ["Next.js", "Tailwind"],
+    liveHref: "https://xora-saas-three.vercel.app/",
+    githubHref: "https://github.com/shaurya35/xora-saas",
+    image: "/projects/xora.jpg",
   },
 ];
