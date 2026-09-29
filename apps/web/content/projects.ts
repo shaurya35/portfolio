@@ -5,7 +5,7 @@ export const projects: Project[] = [
     slug: "dhwani",
     title: "Dhwani",
     description:
-      "Multilingual voice-AI agent that calls and screens blue-collar job candidates. 20-30 customer discovery interviews so far.",
+      "Voice AI that phone-screens blue-collar candidates in Hindi, English, and Hinglish. 100+ outreach calls, 20-30 customer interviews.",
     tech: ["Python", "Next.js", "TypeScript"],
     liveHref: "https://dhwanilabs.com/",
     githubHref: null,
@@ -15,8 +15,8 @@ export const projects: Project[] = [
     slug: "upbot",
     title: "Upbot",
     description:
-      "Distributed monitoring prototype: worker-pusher architecture on Redis Streams, running health checks across 15+ global regions.",
-    tech: ["Next.js", "Redis", "Express.js"],
+      "Uptime monitor running checks from 15+ regions on Cloudflare Workers, fed by a Redis Streams job queue.",
+    tech: ["Next.js", "Redis", "Cloudflare Workers"],
     liveHref: "https://www.upbot.space/",
     githubHref: "https://github.com/shaurya35/upbot",
     image: "/projects/upbot.jpg",
@@ -25,7 +25,7 @@ export const projects: Project[] = [
     slug: "iterconnect",
     title: "ITERConnect",
     description:
-      "Campus developer-networking platform built with a 7-person team. 250+ active users, 10+ alumni.",
+      "Campus network for hackathon teams and alumni mentors. 250+ users, built with a 7-person team.",
     tech: ["Next.js", "Firebase", "Express.js"],
     liveHref: "https://www.iterconnect.com/",
     githubHref: "https://github.com/shaurya35/ITER-Social-Connect",
@@ -35,7 +35,7 @@ export const projects: Project[] = [
     slug: "solana-realtime-indexer",
     title: "Solana Realtime Indexer",
     description:
-      "Experimental Rust indexer decoding Pump.fun and PumpSwap trades on Solana, including CPI-routed trades.",
+      "Rust indexer for Pump.fun and PumpSwap trades over Yellowstone gRPC. Clean at 4,800 tx/s, with gap backfill.",
     tech: ["Rust", "Carbon", "Yellowstone gRPC"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/solana-realtime-indexer",
@@ -43,7 +43,8 @@ export const projects: Project[] = [
   {
     slug: "philips-greenheart",
     title: "Philips GreenHeart",
-    description: "Philips Greenheart monitors your heart health (Ex-@Ownpath).",
+    description:
+      "Led Philips' preventive heart-health platform from POC to production at Ownpath. 86% test coverage, under 3% duplication.",
     tech: ["React", "TypeScript"],
     liveHref: "https://www.heartprint.in/greenheartprogram/",
     githubHref: null,
@@ -53,17 +54,27 @@ export const projects: Project[] = [
     slug: "brixline",
     title: "Brixline",
     description:
-      "Brixline is a tech-enabled Construction-as-a-Service Company (Ex-@Brixline).",
+      "Web platform for Brixline, a construction-as-a-service startup, built as founding engineer.",
     tech: ["Next.js", "TypeScript"],
     liveHref: "https://brixline-dev.vercel.app/",
     githubHref: "https://github.com/shaurya35/brixline",
     image: "/projects/brixline.jpg",
   },
   {
+    slug: "gobrix",
+    title: "Gobrix",
+    description:
+      "The first version of Brixline's platform, from when the company was called Gobrix.",
+    tech: ["Next.js", "TypeScript"],
+    liveHref: "https://brixline-client-main.vercel.app/",
+    githubHref: "https://github.com/shaurya35/brixline",
+    image: "/projects/gobrix.jpg",
+  },
+  {
     slug: "web-wallet",
     title: "Web Wallet",
     description:
-      "A minimal crypto wallet to generate seed phrases and derivation paths.",
+      "In-browser HD wallet: generates a seed phrase and derives Solana and Ethereum accounts from it.",
     tech: ["Solana Web3.js", "Ethers.js"],
     liveHref: "https://webwallet.shauryacodes.me/",
     githubHref: "https://github.com/shaurya35/solana-web-wallet",
@@ -73,7 +84,7 @@ export const projects: Project[] = [
     slug: "sol-staking-program",
     title: "SOL Staking Program",
     description:
-      "An Anchor program to stake SOL in a PDA and earn time-based reward points.",
+      "Anchor program that stakes SOL in a per-user PDA and accrues points by time staked.",
     tech: ["Rust", "Anchor", "Solana"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/staking-smart-contract",
@@ -82,7 +93,7 @@ export const projects: Project[] = [
     slug: "exness",
     title: "Exness",
     description:
-      "Trading platform with auth, trade management, and a poller service.",
+      "Exness-style trading platform clone: web app, API server, and a separate price-poller service.",
     tech: ["Next.js", "TypeScript", "Prisma"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/exness",
@@ -91,7 +102,7 @@ export const projects: Project[] = [
     slug: "stockwise",
     title: "Stockwise",
     description:
-      "Stockwise is a Web-app for Inventory management using demand forecasting.",
+      "Inventory manager that forecasts demand to recommend the right stock levels.",
     tech: ["React", "Express.js"],
     liveHref: "https://stockwise-omega.vercel.app/",
     githubHref: "https://github.com/shaurya35/Stockwise-Inventory-Manager",
@@ -101,7 +112,7 @@ export const projects: Project[] = [
     slug: "token-liquidity-creator",
     title: "Token Liquidity Creator",
     description:
-      "Solana launchpad to create, mint tokens, and add CP liquidity pools.",
+      "Solana launchpad to create and mint tokens, then seed constant-product liquidity pools.",
     tech: ["React", "Solana", "Web3.js"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/Token-Liquidity-Creator",
@@ -110,7 +121,7 @@ export const projects: Project[] = [
     slug: "dpin-uptime",
     title: "DPIN Uptime",
     description:
-      "Uptime monitoring with API, hub, and validator microservices.",
+      "Decentralized uptime monitor: validator nodes run checks and report to a hub.",
     tech: ["Next.js", "TypeScript", "Node.js"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/dpin-uptime",
@@ -119,7 +130,7 @@ export const projects: Project[] = [
     slug: "rust-password-manager",
     title: "Rust Password Manager",
     description:
-      "CLI password manager built in Rust with Actix-web and Docker.",
+      "Password manager backend in Rust on Actix-web, packaged with Docker.",
     tech: ["Rust", "Actix-web", "Docker"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/Rust-PM-be",
@@ -128,7 +139,7 @@ export const projects: Project[] = [
     slug: "greenglide",
     title: "GreenGlide",
     description:
-      "GreenGlide is an Web-app addressing Inefficiencies in Urban Waste Management.",
+      "Web app for tracking, segregating, and managing urban waste, built with a college team.",
     tech: ["React", "Express.js"],
     liveHref: "https://greenglide-smartwaste-management-system.vercel.app/",
     githubHref:
@@ -139,26 +150,16 @@ export const projects: Project[] = [
     slug: "e-learning-platform",
     title: "E-Learning Platform",
     description:
-      "E-learning platform with course management and ML recommendations.",
+      "E-learning platform with course management and ML-based course recommendations.",
     tech: ["Next.js", "Express.js", "Python"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/E-Learning-Platform",
   },
   {
-    slug: "gobrix",
-    title: "Gobrix",
-    description:
-      "Gobrix is a tech-enabled Construction-as-a-Service Company (Ex-@Brixline).",
-    tech: ["Next.js", "TypeScript"],
-    liveHref: "https://brixline-client-main.vercel.app/",
-    githubHref: "https://github.com/shaurya35/brixline",
-    image: "/projects/gobrix.jpg",
-  },
-  {
     slug: "ethereum-wallet-adapter",
     title: "Ethereum Wallet Adapter",
     description:
-      "Ethereum wallet connector to interact with ERC-20 contracts on-chain.",
+      "Ethereum wallet connector using Wagmi and Viem to read from and write to ERC-20 contracts.",
     tech: ["TypeScript", "Wagmi", "Viem"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/Ethereum-wallet-adapter",
@@ -166,8 +167,9 @@ export const projects: Project[] = [
   {
     slug: "interactive-calendar",
     title: "Interactive Calendar",
-    description: "An Interactive calendar developed with Next.js, PostgreSQL.",
-    tech: ["Next.js", "Firebase"],
+    description:
+      "Event calendar to create, edit, and delete events, backed by PostgreSQL through Prisma.",
+    tech: ["Next.js", "PostgreSQL", "Prisma"],
     liveHref: null,
     githubHref: "https://github.com/shaurya35/Interactive-Nextjs-Calendar",
     image: "/projects/interactive-calendar.jpg",
@@ -175,7 +177,8 @@ export const projects: Project[] = [
   {
     slug: "xora",
     title: "Xora",
-    description: "A modern, responsive frontend UI project with Tailwind.",
+    description:
+      "Responsive SaaS landing page built with Next.js and Tailwind.",
     tech: ["Next.js", "Tailwind"],
     liveHref: "https://xora-saas-three.vercel.app/",
     githubHref: "https://github.com/shaurya35/xora-saas",
