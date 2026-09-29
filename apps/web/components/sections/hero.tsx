@@ -43,7 +43,7 @@ export function Hero() {
               key={social.name}
               trackTarget={`social:${social.name.toLowerCase()}`}
               href={social.href}
-              target="_blank"
+              target={social.href.startsWith("mailto:") ? undefined : "_blank"}
               rel="noreferrer"
               aria-label={social.name}
               className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"

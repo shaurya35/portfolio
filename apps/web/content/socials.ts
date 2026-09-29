@@ -11,7 +11,7 @@ export const socials: Social[] = [
   { name: "Medium", href: "https://medium.com/@shauryajha35", icon: "medium" },
   {
     name: "Email",
-    href: "https://mail.google.com/mail/?view=cm&fs=1&to=shauryajha35@gmail.com",
+    href: "mailto:shauryajha35@gmail.com",
     icon: "mail",
   },
 ];

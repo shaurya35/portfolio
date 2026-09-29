@@ -51,7 +51,7 @@ export function Footer() {
                     key={social.name}
                     trackTarget={`social:${social.name.toLowerCase()}`}
                     href={social.href}
-                    target="_blank"
+                    target={social.href.startsWith("mailto:") ? undefined : "_blank"}
                     rel="noreferrer"
                     aria-label={social.name}
                     className="flex size-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
