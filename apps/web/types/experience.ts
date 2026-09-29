@@ -1,3 +1,5 @@
+import type { TechKey } from "@/content/tech";
+
 export type ExperienceMode = "On-Site" | "Remote" | "Hybrid";
 
 export type Experience = {
@@ -8,4 +10,7 @@ export type Experience = {
   end: string | null;
   location: string;
   mode: ExperienceMode;
+  /** Shown when the row is expanded. A role with neither gets no chevron. */
+  tech?: TechKey[];
+  highlights?: string[];
 };
