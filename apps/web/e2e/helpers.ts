@@ -3,8 +3,6 @@ import type { APIRequestContext, Page } from "@playwright/test";
 export const MOCK_PORT = 9191;
 // Overridable for when another local app already holds 3100.
 export const SITE_PORT = Number(process.env.E2E_SITE_PORT ?? 3100);
-/** Shared by the site (as REVALIDATE_SECRET) and the mock backend. */
-export const INTERNAL_SECRET = "e2e-internal-secret";
 export const MOCK_URL = `http://127.0.0.1:${MOCK_PORT}`;
 export const SITE_URL = `http://127.0.0.1:${SITE_PORT}`;
 

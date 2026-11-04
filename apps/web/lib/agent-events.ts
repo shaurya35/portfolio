@@ -1,10 +1,7 @@
 // Server side only: reports a fetch of /llms.txt to rust-be's /agent-events
 // (apps/rust-be/src/routes/agent_events.rs). The page beacon can't do this:
 // an agent reading a text file runs no script, and /e drops bots on purpose.
-//
-// Authenticated with REVALIDATE_SECRET, which web and rust-be already share
-// for the revalidate webhook. If the two values ever differ, rust-be answers
-// 401 and the error below shows up in this project's Vercel logs.
+// Like /e, the endpoint is open and rate-limited, so this needs no secret.
 import { agentName } from "@/lib/agent-name";
 
 const TIMEOUT_MS = 3000;
@@ -26,13 +23,12 @@ export async function recordAgentFetch({
   country: string | null;
 }): Promise<void> {
   const base = process.env.RUST_API_URL?.replace(/\/+$/, "");
-  const secret = process.env.REVALIDATE_SECRET;
-  if (!base || !secret || !shouldReport()) return;
+  if (!base || !shouldReport()) return;
 
   try {
     const response = await fetch(`${base}/agent-events`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Internal-Secret": secret },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path, agent: agentName(userAgent), country }),
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
