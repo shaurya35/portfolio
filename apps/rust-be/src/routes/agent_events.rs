@@ -2,18 +2,20 @@
 //!
 //! /e can't record these: it's fed by a script in the page, which an agent
 //! reading a text file never runs, and it drops every bot on purpose. So the
-//! web app's /llms.txt route posts here itself, server to server, with the
-//! secret it already shares with rust-be for the revalidate webhook.
+//! web app's /llms.txt route posts here itself, server to server.
+//!
+//! Open and rate-limited, the same as /e: anyone could post a made-up
+//! fetch, the same small risk the pageview stats already accept, and the
+//! per-IP limit caps what that could cost.
 
 use axum::body::Bytes;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
 
 use crate::error::AppError;
+use crate::extractors::visitor::client_ip;
 use crate::models::event::NewAgentFetchBody;
 use crate::state::AppState;
-
-pub const SECRET_HEADER: &str = "x-internal-secret";
 
 /// A real event is well under 200 bytes.
 pub const MAX_BODY_BYTES: usize = 1024;
@@ -27,11 +29,8 @@ pub async fn create(
     headers: HeaderMap,
     body: Bytes,
 ) -> Result<StatusCode, AppError> {
-    let provided = headers
-        .get(SECRET_HEADER)
-        .and_then(|value| value.to_str().ok());
-    if !secret_matches(provided, &state.config.revalidate_secret) {
-        return Err(AppError::Unauthorized);
+    if !state.event_limiter.check(client_ip(&headers)) {
+        return Err(AppError::TooManyRequests);
     }
 
     let body: NewAgentFetchBody = serde_json::from_slice(&body)
@@ -53,18 +52,6 @@ pub async fn create(
     .await?;
 
     Ok(StatusCode::NO_CONTENT)
-}
-
-/// Compares through blake3, whose `Hash` equality is constant time, so the
-/// time a wrong guess takes says nothing about how much of it was right. An
-/// unset secret never matches, even an empty header.
-fn secret_matches(provided: Option<&str>, expected: &str) -> bool {
-    match provided {
-        Some(provided) if !expected.is_empty() => {
-            blake3::hash(provided.as_bytes()) == blake3::hash(expected.as_bytes())
-        }
-        _ => false,
-    }
 }
 
 /// The body with every field checked: a path on this site, an agent name
@@ -107,20 +94,6 @@ mod tests {
             agent: agent.to_owned(),
             country: country.map(str::to_owned),
         }
-    }
-
-    #[test]
-    fn only_the_exact_secret_matches() {
-        assert!(secret_matches(Some("s3cret"), "s3cret"));
-        assert!(!secret_matches(Some("s3cret "), "s3cret"));
-        assert!(!secret_matches(Some("wrong"), "s3cret"));
-        assert!(!secret_matches(None, "s3cret"));
-    }
-
-    #[test]
-    fn an_unset_secret_never_matches() {
-        assert!(!secret_matches(Some(""), ""));
-        assert!(!secret_matches(None, ""));
     }
 
     #[test]

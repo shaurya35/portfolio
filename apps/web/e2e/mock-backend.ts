@@ -20,9 +20,6 @@ const posts: MockPost[] = structuredClone(SEED_POSTS);
 const requests: { method: string; path: string; body: unknown }[] = [];
 const events: unknown[] = [];
 const agentEvents: unknown[] = [];
-// The site's REVALIDATE_SECRET (playwright.config.ts), which /agent-events
-// requires just as rust-be does.
-const INTERNAL_SECRET = process.env.MOCK_INTERNAL_SECRET ?? "";
 let nextId = Math.max(...posts.map((post) => post.id)) + 1;
 
 const now = () => new Date().toISOString();
@@ -119,9 +116,6 @@ const server = createServer(async (req, res) => {
   if (path === "/__agent_events") return send(res, 200, agentEvents);
 
   if (path === "/agent-events" && method === "POST") {
-    if (!INTERNAL_SECRET || req.headers["x-internal-secret"] !== INTERNAL_SECRET) {
-      return send(res, 401, { error: "unauthorized" });
-    }
     agentEvents.push(body);
     return send(res, 204);
   }

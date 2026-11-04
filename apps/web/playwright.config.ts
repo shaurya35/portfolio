@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { INTERNAL_SECRET, MOCK_PORT, MOCK_URL, SITE_PORT, SITE_URL } from "./e2e/helpers";
+import { MOCK_PORT, MOCK_URL, SITE_PORT, SITE_URL } from "./e2e/helpers";
 
 // End-to-end tests against a real production build (next build + next
 // start), talking to e2e/mock-backend.ts instead of rust-be. One worker:
@@ -21,11 +21,7 @@ export default defineConfig({
     {
       command: "bun e2e/mock-backend.ts",
       url: `${MOCK_URL}/health`,
-      env: {
-        MOCK_BACKEND_PORT: String(MOCK_PORT),
-        MOCK_BACKEND_ORIGIN: SITE_URL,
-        MOCK_INTERNAL_SECRET: INTERNAL_SECRET,
-      },
+      env: { MOCK_BACKEND_PORT: String(MOCK_PORT), MOCK_BACKEND_ORIGIN: SITE_URL },
       reuseExistingServer: false,
     },
     {
@@ -38,7 +34,6 @@ export default defineConfig({
         NEXT_DIST_DIR: ".next-e2e",
         RUST_API_URL: MOCK_URL,
         NEXT_PUBLIC_RUST_API_URL: MOCK_URL,
-        REVALIDATE_SECRET: INTERNAL_SECRET,
         NEXT_TELEMETRY_DISABLED: "1",
       },
       reuseExistingServer: false,

@@ -31,9 +31,8 @@ pub struct NewEventBody {
 }
 
 /// One fetch of an AI-facing file (/llms.txt), reported server to server by
-/// the web app's route handler. It never comes from a browser:
-/// `routes::agent_events` only accepts it with the shared secret, which is
-/// why, unlike `NewEventBody`, it may describe a bot.
+/// the web app's route handler. Unlike `NewEventBody` it describes a bot on
+/// purpose: counting agents is the point (see `routes::agent_events`).
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct NewAgentFetchBody {
