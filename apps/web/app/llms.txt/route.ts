@@ -1,4 +1,6 @@
+import { after } from "next/server";
 import { getPosts } from "@/lib/api";
+import { recordAgentFetch } from "@/lib/agent-events";
 import { experience } from "@/content/experience";
 import { llms } from "@/content/llms";
 import { site, SITE_URL } from "@/content/site";
@@ -70,7 +72,16 @@ function buildLlmsTxt(posts: Writing[]): string {
   ].join("\n");
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Counted after the response is sent, so the agent never waits on it.
+  after(() =>
+    recordAgentFetch({
+      path: "/llms.txt",
+      userAgent: request.headers.get("user-agent"),
+      country: request.headers.get("x-vercel-ip-country"),
+    }),
+  );
+
   // Like app/sitemap.ts: a backend outage drops the post list, not the file.
   let posts: Writing[] = [];
   try {
@@ -82,7 +93,10 @@ export async function GET() {
   return new Response(buildLlmsTxt(posts), {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      // No CDN caching (unlike feed.xml): a fetch served from Vercel's edge
+      // never reaches this handler, so it would never be counted. Posts are
+      // still cached by getPosts(), so each request stays cheap.
+      "Cache-Control": "public, max-age=0, must-revalidate",
     },
   });
 }
