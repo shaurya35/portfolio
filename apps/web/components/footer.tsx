@@ -5,12 +5,12 @@ import { socialIcons } from "@/components/icons";
 import { TrackedLink } from "@/components/tracked-link";
 import { CurrentYear } from "@/components/current-year";
 
-const navigate = [
+const navigate: { label: string; href: string; document?: boolean; track?: string }[] = [
   { label: "Home", href: "/" },
   { label: "Projects", href: "/projects" },
   { label: "Writing", href: "/writing" },
   { label: "RSS", href: "/writing/feed.xml", document: true },
-  { label: "For AI", href: "/llms.txt", document: true },
+  { label: "For AI", href: "/llms.txt", document: true, track: "footer:for-ai" },
 ];
 
 export function Footer() {
@@ -26,6 +26,19 @@ export function Footer() {
               {navigate.map((item) => {
                 const className =
                   "text-sm text-muted-foreground transition-colors hover:text-foreground";
+
+                if (item.track) {
+                  return (
+                    <TrackedLink
+                      key={item.href}
+                      href={item.href}
+                      trackTarget={item.track}
+                      className={className}
+                    >
+                      {item.label}
+                    </TrackedLink>
+                  );
+                }
 
                 return item.document ? (
                   <a key={item.href} href={item.href} className={className}>

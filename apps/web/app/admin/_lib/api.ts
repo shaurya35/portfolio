@@ -124,6 +124,7 @@ export type TargetCount = { target: string; count: number };
 export type ReferrerCount = { referrer: string; count: number };
 export type CountryCount = { country: string; count: number };
 export type DeviceCount = { device: string; count: number };
+export type AgentCount = { agent: string; count: number };
 
 export type Stats = {
   daily: DailyCount[];
@@ -132,6 +133,8 @@ export type Stats = {
   top_referrers: ReferrerCount[];
   countries: CountryCount[];
   devices: DeviceCount[];
+  /** Missing from a rust-be deployed before agent fetches existed. */
+  agents?: AgentCount[];
 };
 
 export function getStats(days: number): Promise<Stats> {
