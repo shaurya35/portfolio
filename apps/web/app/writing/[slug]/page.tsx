@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/format";
 import { ArrowLeftIcon } from "@/components/icons";
 import { ReadingProgress } from "@/components/reading-progress";
 import { PostArticle } from "@/components/post-article";
-import { site, SITE_URL } from "@/content/site";
+import { site, SITE_URL, PERSON_ID } from "@/content/site";
 import { pageMetadata } from "@/lib/metadata";
 
 export async function generateStaticParams() {
@@ -73,6 +73,7 @@ export default async function WritingPostPage({
     image: `${postUrl}/opengraph-image`,
     author: {
       "@type": "Person",
+      "@id": PERSON_ID,
       name: site.name,
       url: SITE_URL,
     },
