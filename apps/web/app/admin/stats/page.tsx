@@ -266,6 +266,18 @@ export default function AdminStatsPage() {
                 emptyLabel="No tracked clicks yet."
               />
             </div>
+
+            {/* Fetches of /llms.txt, recorded server side: agents run no
+                script, so none of the sections above can see them. */}
+            <div>
+              <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+                AI agents
+              </h2>
+              <StatList
+                rows={(stats.agents ?? []).map((a) => ({ label: a.agent, count: a.count }))}
+                emptyLabel="No /llms.txt fetches yet."
+              />
+            </div>
           </div>
         </div>
       ) : null}
