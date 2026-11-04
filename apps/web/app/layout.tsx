@@ -7,7 +7,8 @@ import { Beacon } from "@/components/beacon";
 import { VercelInsights } from "@/components/vercel-insights";
 import { ToastProvider } from "@/components/toast";
 import { UnsavedChangesProvider } from "@/lib/use-unsaved-changes";
-import { site, SITE_URL, SITE_DESCRIPTION } from "@/content/site";
+import { site, SITE_URL, SITE_DESCRIPTION, PERSON_ID } from "@/content/site";
+import { llms } from "@/content/llms";
 import { socials } from "@/content/socials";
 import "./globals.css";
 
@@ -71,10 +72,27 @@ const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");if(!t)
 const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
+  "@id": PERSON_ID,
   name: site.name,
   jobTitle: site.role,
+  // The llms.txt intro, with its markdown links reduced to their labels.
+  description: llms.intro.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
   url: SITE_URL,
+  image: `${SITE_URL}/Self.jpeg`,
   email: `mailto:${site.email}`,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Bengaluru",
+    addressCountry: "IN",
+  },
+  knowsAbout: [
+    "TypeScript",
+    "Rust",
+    "Next.js",
+    "Python",
+    "Distributed Systems",
+    "Applied AI",
+  ],
   sameAs: socials.filter((social) => social.name !== "Email").map((social) => social.href),
 };
 

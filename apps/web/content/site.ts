@@ -4,6 +4,9 @@ import type { Site } from "@/types/site";
 // (metadataBase, sitemap, robots, feed) should point at this host directly
 // rather than through the redirect.
 export const SITE_URL = "https://www.shauryacodes.me";
+// One stable identifier for "Shaurya Jha" across every JSON-LD block, so
+// search engines tie the homepage Person and each post's author together.
+export const PERSON_ID = `${SITE_URL}/#person`;
 export const SITE_DESCRIPTION = "Software engineer. Building products, not just projects.";
 
 export const site: Site = {
