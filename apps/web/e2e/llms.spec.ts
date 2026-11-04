@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { MOCK_URL } from "./helpers";
 
 const PERSON_ID = "https://www.shauryacodes.me/#person";
 
@@ -99,5 +100,64 @@ test.describe("structured data", () => {
     await page.goto("/writing/rich-post");
     const posting = (await jsonLd(page)).find((node) => node["@type"] === "BlogPosting");
     expect((posting?.["author"] as Record<string, unknown>)?.["@id"]).toBe(PERSON_ID);
+  });
+});
+
+/** Every server-side /llms.txt fetch report the mock backend has received. */
+async function agentEvents(request: APIRequestContext): Promise<unknown[]> {
+  return (await request.get(`${MOCK_URL}/__agent_events`)).json();
+}
+
+test.describe("agent stats", () => {
+  test("/llms.txt is never cached at the edge, so every fetch is counted", async ({ request }) => {
+    const cacheControl = (await request.get("/llms.txt")).headers()["cache-control"];
+    expect(cacheControl).not.toContain("s-maxage");
+  });
+
+  // Real user agents, as each service documents them.
+  const agents: [userAgent: string, name: string][] = [
+    [
+      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
+      "ClaudeBot",
+    ],
+    [
+      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+      "ChatGPT-User",
+    ],
+    [
+      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot",
+      "GPTBot",
+    ],
+    [
+      "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)",
+      "PerplexityBot",
+    ],
+    ["curl/8.7.1", "curl"],
+    [
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "Browser",
+    ],
+  ];
+
+  for (const [userAgent, name] of agents) {
+    test(`a fetch by ${name} is reported to the backend`, async ({ request }) => {
+      const before = (await agentEvents(request)).length;
+      const response = await request.get("/llms.txt", {
+        headers: { "user-agent": userAgent, "x-vercel-ip-country": "IN" },
+      });
+      expect(response.status()).toBe(200);
+      // Sent after the response, so it may land a moment later.
+      await expect
+        .poll(async () => (await agentEvents(request)).slice(before))
+        .toContainEqual({ path: "/llms.txt", agent: name, country: "IN" });
+    });
+  }
+
+  test("the stats page lists /llms.txt fetches per agent", async ({ page }) => {
+    await page.goto("/admin/stats");
+    const section = page.getByRole("heading", { name: "AI agents" }).locator("..");
+    await expect(section).toContainText("ClaudeBot");
+    await expect(section).toContainText("3");
+    await expect(section).toContainText("GPTBot");
   });
 });
