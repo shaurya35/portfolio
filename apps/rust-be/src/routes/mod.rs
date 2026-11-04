@@ -3,6 +3,7 @@ use axum::extract::DefaultBodyLimit;
 use axum::routing::{get, post};
 
 mod admin;
+mod agent_events;
 mod events;
 mod health;
 mod posts;
@@ -27,5 +28,9 @@ pub fn router() -> Router<AppState> {
         .route(
             "/e",
             post(events::create).layer(DefaultBodyLimit::max(events::MAX_BODY_BYTES)),
+        )
+        .route(
+            "/agent-events",
+            post(agent_events::create).layer(DefaultBodyLimit::max(agent_events::MAX_BODY_BYTES)),
         )
 }

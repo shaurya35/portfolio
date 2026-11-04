@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO events (kind, path, target, country, visitor_hash)\n        VALUES ('agent_fetch', $1, $2, $3, '')\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "aa94e641bbab387b2c958e9723e890430f555057e16bccd0fb0bc5da07a550d7"
+}

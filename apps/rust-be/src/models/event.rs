@@ -30,6 +30,23 @@ pub struct NewEventBody {
     pub referrer: Option<String>,
 }
 
+/// One fetch of an AI-facing file (/llms.txt), reported server to server by
+/// the web app's route handler. It never comes from a browser:
+/// `routes::agent_events` only accepts it with the shared secret, which is
+/// why, unlike `NewEventBody`, it may describe a bot.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NewAgentFetchBody {
+    pub path: String,
+    /// A short name the web app derived from the user agent, e.g.
+    /// "ClaudeBot" or "ChatGPT-User".
+    pub agent: String,
+    /// The visitor's country as the web app's host saw it. rust-be can't
+    /// read it itself: this request comes from the web server, not the agent.
+    #[serde(default)]
+    pub country: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
