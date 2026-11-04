@@ -5,6 +5,7 @@
 //   GET /__requests  every write the site sent (method, path, body), so a
 //                    test can assert on exactly what the editor saved
 //   GET /__events    every analytics beacon received
+//   GET /__agent_events  every server-side /llms.txt fetch report received
 //
 // State lives in memory for the lifetime of one test run. Tests only add to
 // it (each uses its own slugs), because the site caches what it reads.
@@ -18,6 +19,10 @@ const ORIGIN = process.env.MOCK_BACKEND_ORIGIN ?? "http://127.0.0.1:3100";
 const posts: MockPost[] = structuredClone(SEED_POSTS);
 const requests: { method: string; path: string; body: unknown }[] = [];
 const events: unknown[] = [];
+const agentEvents: unknown[] = [];
+// The site's REVALIDATE_SECRET (playwright.config.ts), which /agent-events
+// requires just as rust-be does.
+const INTERNAL_SECRET = process.env.MOCK_INTERNAL_SECRET ?? "";
 let nextId = Math.max(...posts.map((post) => post.id)) + 1;
 
 const now = () => new Date().toISOString();
@@ -102,11 +107,24 @@ const server = createServer(async (req, res) => {
       body = raw;
     }
   }
-  if (method !== "GET" && path !== "/e") requests.push({ method, path, body });
+  // Analytics have their own lists below; /__requests is for what the
+  // editor saved.
+  if (method !== "GET" && path !== "/e" && path !== "/agent-events") {
+    requests.push({ method, path, body });
+  }
 
   if (path === "/health") return send(res, 200, { status: "ok" });
   if (path === "/__requests") return send(res, 200, requests);
   if (path === "/__events") return send(res, 200, events);
+  if (path === "/__agent_events") return send(res, 200, agentEvents);
+
+  if (path === "/agent-events" && method === "POST") {
+    if (!INTERNAL_SECRET || req.headers["x-internal-secret"] !== INTERNAL_SECRET) {
+      return send(res, 401, { error: "unauthorized" });
+    }
+    agentEvents.push(body);
+    return send(res, 204);
+  }
 
   if (path === "/e" && method === "POST") {
     events.push(body);
@@ -191,6 +209,10 @@ const server = createServer(async (req, res) => {
       top_referrers: [],
       countries: [],
       devices: [],
+      agents: [
+        { agent: "ClaudeBot", count: 3 },
+        { agent: "GPTBot", count: 1 },
+      ],
     });
   }
 
