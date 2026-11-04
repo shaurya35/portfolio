@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
       },
       { source: "/mail", destination: socialHref("Email"), permanent: false },
       { source: "/cal", destination: site.calHref, permanent: false },
+      { source: "/agents", destination: "/llms.txt", permanent: false },
     ];
   },
 };

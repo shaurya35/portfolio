@@ -10,6 +10,7 @@ const navigate = [
   { label: "Projects", href: "/projects" },
   { label: "Writing", href: "/writing" },
   { label: "RSS", href: "/writing/feed.xml", document: true },
+  { label: "For AI", href: "/llms.txt", document: true },
 ];
 
 export function Footer() {
