@@ -52,6 +52,13 @@ pub struct PostTraffic {
     pub clicks: i64,
 }
 
+/// Fetches of /llms.txt per AI agent (see `routes::agent_events`).
+#[derive(Debug, Serialize)]
+pub struct AgentCount {
+    pub agent: String,
+    pub count: i64,
+}
+
 #[derive(Debug, Serialize)]
 pub struct Stats {
     pub daily: Vec<DailyCount>,
@@ -60,4 +67,5 @@ pub struct Stats {
     pub top_referrers: Vec<ReferrerCount>,
     pub countries: Vec<CountryCount>,
     pub devices: Vec<DeviceCount>,
+    pub agents: Vec<AgentCount>,
 }

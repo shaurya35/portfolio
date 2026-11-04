@@ -6,8 +6,8 @@ use serde::Deserialize;
 use crate::error::AppError;
 use crate::extractors::admin::Admin;
 use crate::models::stats::{
-    CountryCount, DailyCount, DeviceCount, PathCount, PostTraffic, ReferrerCount, Stats,
-    TargetCount,
+    AgentCount, CountryCount, DailyCount, DeviceCount, PathCount, PostTraffic, ReferrerCount,
+    Stats, TargetCount,
 };
 use crate::state::AppState;
 
@@ -27,7 +27,7 @@ pub(super) async fn stats(
     // Every pageview query skips /admin: those are the site owner working
     // in the editor, not visitors (they were ~10% of recorded pageviews
     // before the beacon stopped sending them).
-    let (daily, top_paths, top_targets, top_referrers, countries, devices) = tokio::try_join!(
+    let (daily, top_paths, top_targets, top_referrers, countries, devices, agents) = tokio::try_join!(
         sqlx::query_as!(
             DailyCount,
             r#"
@@ -113,6 +113,21 @@ pub(super) async fn stats(
             days
         )
         .fetch_all(&state.pool),
+        // Agent fetches are their own kind, so none of the pageview queries
+        // above count them, and the bot filter on /e never sees them.
+        sqlx::query_as!(
+            AgentCount,
+            r#"
+            SELECT target as "agent!", count(*) as "count!"
+            FROM events
+            WHERE kind = 'agent_fetch' AND target IS NOT NULL AND created_at >= now() - make_interval(days => $1)
+            GROUP BY target
+            ORDER BY count(*) DESC
+            LIMIT 10
+            "#,
+            days
+        )
+        .fetch_all(&state.pool),
     )?;
 
     Ok(Json(Stats {
@@ -122,6 +137,7 @@ pub(super) async fn stats(
         top_referrers,
         countries,
         devices,
+        agents,
     }))
 }
 

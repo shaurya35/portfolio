@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT target as \"agent!\", count(*) as \"count!\"\n            FROM events\n            WHERE kind = 'agent_fetch' AND target IS NOT NULL AND created_at >= now() - make_interval(days => $1)\n            GROUP BY target\n            ORDER BY count(*) DESC\n            LIMIT 10\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "agent!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "events",
+            "name": "target"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      true,
+      null
+    ]
+  },
+  "hash": "e381c8bbe1b2e93feb4e593a32d49bbce420c36f3719d89d7e681c567ba00265"
+}
