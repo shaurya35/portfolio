@@ -55,6 +55,12 @@ export function pageMetadata({
             title: "Shaurya Jha Writing",
           },
         ],
+        "text/plain": [
+          {
+            url: "/llms.txt",
+            title: "Shaurya Jha for AI agents",
+          },
+        ],
       },
     },
     openGraph: {
