@@ -2,30 +2,6 @@ import type { Experience } from "@/types/experience";
 
 export const experience: Experience[] = [
   {
-    company: "Dhwani",
-    companyHref: "https://dhwanilabs.com",
-    role: "Founder & Engineer",
-    start: "2025-12",
-    end: null,
-    location: "Bangalore, IN",
-    mode: "Remote",
-    tech: [
-      "python",
-      "fastapi",
-      "postgresql",
-      "nextjs",
-      "typescript",
-      "tailwindcss",
-    ],
-    highlights: [
-      "Built the backend that runs AI screening calls end to end, from candidate upload to a ranked shortlist.",
-      "Wrote the scoring engine that ranks candidates from Hindi and Hinglish call transcripts.",
-      "Made calling reliable: no double-dialing, automatic retries for missed calls, and a recovery queue for failed results.",
-      "Added budget caps and legal calling hours so campaigns stay within cost and compliance.",
-      "Prototyped our own voice pipeline before moving to Vapi, and built a live browser demo for prospects.",
-    ],
-  },
-  {
     company: "Ownpath",
     companyHref: "https://ownpath.com",
     role: "Forward Deployed Engineer",
