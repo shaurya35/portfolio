@@ -13,7 +13,7 @@ export const site: Site = {
   name: "Shaurya Jha",
   role: "Engineer · Founder",
   credibility:
-    "Building multilingual voice AI for hiring at Dhwani. Previously at Ownpath, Solarpunk, and Brixline.",
+    "I like solving hard problems. Previously at Ownpath, Solarpunk, and Brixline.",
   email: "shauryajha35@gmail.com",
   calHref: "https://cal.com/shaurya35/30min",
 };
