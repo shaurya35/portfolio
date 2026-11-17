@@ -13,6 +13,7 @@
 # testing
 /coverage
 /.next-e2e/
+/.next-verify-*/
 /playwright-report/
 /test-results/
 
