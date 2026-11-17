@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "${HOME}/.bun/bin/bun" ]]; then
+  PATH="${HOME}/.bun/bin:${PATH}"
+fi
+if ! command -v bun >/dev/null 2>&1; then
+  echo "bun is required to run control-portfolio" >&2
+  exit 2
+fi
+exec bun "$DIR/../scripts/control-portfolio.ts" "$@"

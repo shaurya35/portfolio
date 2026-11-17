@@ -44,5 +44,7 @@ apps/rust-be/assignments
 
 # Local agent / tool state (may contain local settings, tokens, scan reports)
 .claude/
-.cursor/
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
 .gstack/
