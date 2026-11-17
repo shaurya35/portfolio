@@ -3,6 +3,7 @@ mod config;
 mod db;
 mod error;
 mod extractors;
+mod login_limit;
 mod markdown;
 mod models;
 mod ratelimit;
@@ -14,7 +15,6 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use axum::http::{HeaderValue, Method, header};
-use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
 
 use crate::config::Config;
@@ -43,18 +43,6 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let daily_salt = Arc::new(RwLock::new(state::generate_salt()));
-
-    tokio::spawn({
-        let daily_salt = daily_salt.clone();
-        async move {
-            loop {
-                tokio::time::sleep(state::SALT_ROTATION_INTERVAL).await;
-                *daily_salt.write().await = state::generate_salt();
-            }
-        }
-    });
-
     let allowed_origin = HeaderValue::from_str(&config.allowed_origin).unwrap_or_else(|err| {
         eprintln!("invalid ALLOWED_ORIGIN: {err}");
         std::process::exit(1);
@@ -63,9 +51,6 @@ async fn main() {
     let state = AppState {
         pool,
         config,
-        daily_salt,
-        cached_session_epoch: Arc::new(RwLock::new(None)),
-        login_limiter: Arc::new(RateLimiter::new(5, Duration::from_secs(5 * 60))),
         event_limiter: Arc::new(RateLimiter::new(120, Duration::from_secs(60))),
     };
 

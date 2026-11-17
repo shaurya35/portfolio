@@ -1,8 +1,3 @@
-//! A minimal per-key fixed-window rate limiter. In-memory, so it resets on
-//! restart like the rest of this process's transient state — an acceptable
-//! trade-off here since it's defense-in-depth on top of argon2's own cost
-//! (login) and the bot-UA filter (events), not the sole protection.
-
 use std::collections::HashMap;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};

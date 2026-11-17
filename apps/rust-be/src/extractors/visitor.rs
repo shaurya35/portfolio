@@ -40,7 +40,10 @@ impl FromRequestParts<AppState> for Visitor {
         let user_agent = header_value(&parts.headers, "user-agent").unwrap_or("");
         let lowered_user_agent = user_agent.to_lowercase();
         let ip = client_ip(&parts.headers);
-        let salt = state.daily_salt.read().await.clone();
+        let salt = daily_salt(
+            &state.config.visitor_hash_secret,
+            chrono::Utc::now().date_naive(),
+        );
 
         Ok(Visitor {
             visitor_hash: visitor_hash(ip, user_agent, &salt),
@@ -56,29 +59,31 @@ fn header_value<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
 }
 
 pub(crate) fn client_ip(headers: &HeaderMap) -> &str {
-    // Vercel doesn't set fly-client-ip (leftover from the pre-Vercel Fly.io
-    // deployment) — kept only in case this ever runs behind Fly again.
-    // x-forwarded-for is what Vercel actually sends, and every request has
-    // hit that fallback in production since the migration.
-    if let Some(value) = header_value(headers, "fly-client-ip") {
-        return value;
-    }
-
-    let forwarded_last = header_value(headers, "x-forwarded-for")
-        .and_then(|value| value.rsplit(',').next())
-        .map(str::trim)
-        .filter(|value| !value.is_empty());
-
-    forwarded_last.unwrap_or(UNKNOWN_IP_PLACEHOLDER)
+    // `x-vercel-forwarded-for` is the client address Vercel sets. A proxy in
+    // front of Vercel can overwrite `x-forwarded-for`, so that header is only
+    // the fallback. `fly-client-ip` is not a Vercel header.
+    forwarded_client(header_value(headers, "x-vercel-forwarded-for"))
+        .or_else(|| forwarded_client(header_value(headers, "x-forwarded-for")))
+        .unwrap_or(UNKNOWN_IP_PLACEHOLDER)
 }
 
-/// Same story as `client_ip`: `fly-client-country` never fires on Vercel.
-/// `x-vercel-ip-country` is what Vercel actually sets. Every event recorded
-/// since the migration has had `country = NULL` as a result — this wasn't a
-/// low-sample-size gap, the header it read has never existed on this host.
+fn forwarded_client(value: Option<&str>) -> Option<&str> {
+    value
+        .and_then(|value| value.rsplit(',').next())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+}
+
+pub(crate) fn daily_salt(secret: &str, day: chrono::NaiveDate) -> String {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(secret.as_bytes());
+    hasher.update(b"\0");
+    hasher.update(day.to_string().as_bytes());
+    hasher.finalize().to_hex().to_string()
+}
+
 fn client_country(headers: &HeaderMap) -> Option<&str> {
     header_value(headers, "x-vercel-ip-country")
-        .or_else(|| header_value(headers, "fly-client-country"))
 }
 
 fn device(lowered_user_agent: &str) -> &'static str {
@@ -119,6 +124,47 @@ mod tests {
         ] {
             assert!(is_bot(&ua.to_lowercase()), "{ua}");
         }
+    }
+
+    #[test]
+    fn spoofed_fly_client_ip_does_not_change_the_key() {
+        let mut spoofed = axum::http::HeaderMap::new();
+        spoofed.insert("x-vercel-forwarded-for", "203.0.113.5".parse().unwrap());
+        spoofed.insert("fly-client-ip", "198.51.100.9".parse().unwrap());
+        spoofed.insert(
+            "x-forwarded-for",
+            "198.51.100.9, 203.0.113.5".parse().unwrap(),
+        );
+
+        let mut clean = axum::http::HeaderMap::new();
+        clean.insert("x-vercel-forwarded-for", "203.0.113.5".parse().unwrap());
+
+        assert_eq!(client_ip(&spoofed), client_ip(&clean));
+        assert_eq!(client_ip(&spoofed), "203.0.113.5");
+    }
+
+    #[test]
+    fn the_same_visitor_hashes_once_per_day() {
+        let day = chrono::NaiveDate::from_ymd_opt(2026, 11, 17).unwrap();
+        let ip = "203.0.113.8";
+        let ua = "Mozilla/5.0 (test)";
+        let left = visitor_hash(ip, ua, &daily_salt("visitor-secret", day));
+        let right = visitor_hash(ip, ua, &daily_salt("visitor-secret", day));
+        assert_eq!(left, right, "one visitor on one day must be one hash");
+        assert_ne!(
+            left,
+            visitor_hash(
+                ip,
+                ua,
+                &daily_salt("visitor-secret", day.succ_opt().unwrap())
+            ),
+            "the next day must be a new hash"
+        );
+        assert_ne!(
+            left,
+            visitor_hash(ip, ua, &daily_salt("other-secret", day)),
+            "a different secret must be a new hash"
+        );
     }
 
     #[test]

@@ -1,9 +1,17 @@
 use axum::extract::FromRequestParts;
+use axum::http::HeaderMap;
 use axum::http::header::ORIGIN;
 use axum::http::request::Parts;
 
 use crate::error::AppError;
 use crate::state::AppState;
+
+pub(crate) fn origin_allowed(headers: &HeaderMap, allowed_origin: &str) -> bool {
+    match headers.get(ORIGIN) {
+        Some(origin) => origin.as_bytes() == allowed_origin.as_bytes(),
+        None => true,
+    }
+}
 
 /// Rejects a request a browser sent on behalf of another site.
 ///
@@ -27,11 +35,10 @@ impl FromRequestParts<AppState> for SameOrigin {
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        match parts.headers.get(ORIGIN) {
-            Some(origin) if origin.as_bytes() != state.config.allowed_origin.as_bytes() => {
-                Err(AppError::Forbidden)
-            }
-            _ => Ok(SameOrigin),
+        if origin_allowed(&parts.headers, &state.config.allowed_origin) {
+            Ok(SameOrigin)
+        } else {
+            Err(AppError::Forbidden)
         }
     }
 }
