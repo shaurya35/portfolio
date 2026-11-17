@@ -44,8 +44,26 @@ mod tests {
 
     #[tokio::test]
     async fn a_logout_on_one_instance_rejects_the_old_cookie_on_another() {
-        let url = std::env::var("TEST_DATABASE_URL").expect("TEST_DATABASE_URL");
-        let pool = sqlx::PgPool::connect(&url).await.unwrap();
+        let admin_url = std::env::var("TEST_DATABASE_URL").expect("TEST_DATABASE_URL");
+        let admin = sqlx::PgPool::connect(&admin_url).await.unwrap();
+        let name = format!(
+            "epoch{}{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .subsec_nanos()
+        );
+        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {name}")))
+            .execute(&admin)
+            .await
+            .unwrap();
+        let (base, _) = admin_url.rsplit_once('/').unwrap();
+        let pool = sqlx::PgPool::connect(&format!("{base}/{name}"))
+            .await
+            .unwrap();
+        sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
         sqlx::query("UPDATE session_epoch SET epoch = 4 WHERE singleton = true")
             .execute(&pool)
             .await
