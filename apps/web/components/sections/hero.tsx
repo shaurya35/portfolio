@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { site } from "@/content/site";
+import { PORTRAIT_PATH, site } from "@/content/site";
 import { socials } from "@/content/socials";
 import { socialIcons } from "@/components/icons";
 import { CopyEmail } from "@/components/copy-email";
@@ -10,7 +10,7 @@ export function Hero() {
     <section className="py-4">
       <div className="flex items-center gap-4">
         <Image
-          src="/image.png"
+          src={PORTRAIT_PATH}
           alt={site.name}
           width={96}
           height={96}

@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
+import { SITE_HOST } from "@/content/site";
 import { getNativePost, getPosts } from "@/lib/api";
 
 export const alt = "Writing by Shaurya Jha";
@@ -43,7 +44,7 @@ export default async function OpenGraphImage({
         }}
       >
         <div style={{ display: "flex", fontSize: 30, color: "#60a5fa" }}>
-          shauryacodes.me / writing
+          {SITE_HOST} / writing
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontSize: 30, color: "#a1a1a1" }}>

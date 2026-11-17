@@ -33,16 +33,25 @@ function CopyButton({ getText }: { getText: () => string }) {
   );
 }
 
+function releasePre(pre: HTMLPreElement) {
+  const wrap = pre.parentElement;
+  if (!wrap?.hasAttribute("data-code-block-wrap") || !wrap.parentNode) return;
+  wrap.parentNode.insertBefore(pre, wrap);
+  wrap.remove();
+}
+
 export function CodeBlockCopyButtons() {
   useEffect(() => {
     const blocks = Array.from(
       document.querySelectorAll<HTMLPreElement>(".post-content pre"),
     );
-    const roots: Root[] = [];
+    const mounts: { root: Root; pre: HTMLPreElement }[] = [];
 
     for (const pre of blocks) {
-      const existing = pre.parentElement;
-      if (existing?.hasAttribute("data-code-block-wrap")) continue;
+      // A previous run may have been cleaned up after it wrapped the block.
+      // Put the <pre> back, then install one button, so a second run (React
+      // strict mode runs setup, cleanup, setup) ends with the same DOM.
+      releasePre(pre);
 
       // The <pre> scrolls horizontally, and an absolutely positioned child of
       // a scroll container scrolls away with its content. Wrapping the block
@@ -63,17 +72,18 @@ export function CodeBlockCopyButtons() {
       // Read from the <pre>, not the wrapper, so the button's own markup can
       // never leak into the copied text.
       root.render(<CopyButton getText={() => pre.textContent ?? ""} />);
-      roots.push(root);
+      mounts.push({ root, pre });
     }
 
     return () => {
-      for (const root of roots) {
-        // Deferred: unmounting synchronously here can race with React's own
-        // render pass for the surrounding tree (e.g. fast navigation away
-        // from the page), producing "Attempted to synchronously unmount a
-        // root while React was already rendering."
-        queueMicrotask(() => root.unmount());
-      }
+      for (const { pre } of mounts) releasePre(pre);
+      // Deferred: unmounting synchronously here can race with React's own
+      // render pass for the surrounding tree (e.g. fast navigation away
+      // from the page), producing "Attempted to synchronously unmount a
+      // root while React was already rendering."
+      queueMicrotask(() => {
+        for (const { root } of mounts) root.unmount();
+      });
     };
   }, []);
 

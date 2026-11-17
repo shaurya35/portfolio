@@ -43,6 +43,10 @@ test.describe("/llms.txt", () => {
     expect(body).toContain("https://x.com/example/status/1");
     expect(body).not.toContain("An Unfinished Draft");
     expect(body).toContain("shauryajha35@gmail.com");
+    expect(body).toContain("100+ outreach calls");
+    expect(body).toContain("15+ regions");
+    expect(body).not.toContain("200 cold calls");
+    expect(body).not.toContain("7-15 locations");
     expect(body).not.toContain("<");
   });
 
@@ -89,6 +93,7 @@ test.describe("structured data", () => {
     expect(person?.["description"]).toBe(
       "Engineer, Founder, Prev at Ownpath, Solarpunk and Brixline",
     );
+    expect(person?.["image"]).toBe("https://www.shauryacodes.me/image.png");
     expect(person?.["knowsAbout"]).toEqual(
       expect.arrayContaining(["TypeScript", "Rust", "Distributed Systems", "Applied AI"]),
     );

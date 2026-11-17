@@ -22,6 +22,9 @@ pub enum AppError {
     #[error("too many requests")]
     TooManyRequests,
 
+    #[error("unsupported media type")]
+    UnsupportedMediaType,
+
     #[error("conflict: {0}")]
     Conflict(String),
 
@@ -63,6 +66,10 @@ impl IntoResponse for AppError {
             AppError::TooManyRequests => (
                 StatusCode::TOO_MANY_REQUESTS,
                 "too many requests".to_owned(),
+            ),
+            AppError::UnsupportedMediaType => (
+                StatusCode::UNSUPPORTED_MEDIA_TYPE,
+                "unsupported media type".to_owned(),
             ),
             AppError::Conflict(msg) => (StatusCode::CONFLICT, msg),
             AppError::Internal(_) | AppError::Database(_) => (

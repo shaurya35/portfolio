@@ -472,8 +472,7 @@ pub fn render(markdown: &str) -> String {
     options.insert(Options::ENABLE_SMART_PUNCTUATION);
     options.insert(Options::ENABLE_TASKLISTS);
 
-    let parser = Parser::new_ext(markdown, options)
-        .filter(|event| !matches!(event, Event::Html(_) | Event::InlineHtml(_)));
+    let parser = Parser::new_ext(markdown, options);
 
     let mut events = Vec::new();
     let mut code_block: Option<(String, String)> = None;
@@ -512,6 +511,12 @@ pub fn render(markdown: &str) -> String {
             Event::End(TagEnd::Link) => {
                 events.push(Event::Html("</a>".into()));
             }
+            Event::Html(html) | Event::InlineHtml(html) => {
+                let clean = sanitize_raw_html(&html);
+                if !clean.is_empty() {
+                    events.push(Event::Html(clean.into()));
+                }
+            }
             other => events.push(other),
         }
     }
@@ -520,6 +525,16 @@ pub fn render(markdown: &str) -> String {
     html::push_html(&mut rendered, events.into_iter());
 
     rendered
+}
+
+fn sanitize_raw_html(html: &str) -> String {
+    let mut builder = ammonia::Builder::default();
+    builder
+        .add_tags(["details", "summary", "img"])
+        .add_tag_attributes("details", &["open"])
+        .add_tag_attributes("img", &["src", "alt", "title", "width", "height"])
+        .url_relative(ammonia::UrlRelative::PassThrough);
+    builder.clean(html).to_string()
 }
 
 #[cfg(test)]
@@ -630,8 +645,26 @@ mod tests {
     }
 
     #[test]
-    fn raw_html_is_still_stripped_from_markdown() {
-        // Guard the existing XSS protection while changing this file.
+    fn details_and_images_survive_sanitized() {
+        let details =
+            render("<details open onclick=\"alert(1)\"><summary>More</summary>body</details>\n");
+        assert!(details.contains("<details"), "{details}");
+        assert!(details.contains("<summary>More</summary>"), "{details}");
+        assert!(details.contains("body"), "{details}");
+        assert!(!details.contains("onclick"), "{details}");
+
+        let image =
+            render(r#"<img src="https://example.com/a.png" alt="diagram" onerror="alert(1)">"#);
+        assert!(image.contains("https://example.com/a.png"), "{image}");
+        assert!(image.contains("diagram"), "{image}");
+        assert!(!image.contains("onerror"), "{image}");
+
+        let script_src = render(r#"<img src="javascript:alert(1)" alt="diagram">"#);
+        assert!(!script_src.contains("javascript:"), "{script_src}");
+    }
+
+    #[test]
+    fn script_tags_are_not_rendered() {
         let out = render("<script>alert(1)</script>\n\nhello");
         assert!(!out.contains("<script"));
     }

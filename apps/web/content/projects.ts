@@ -1,11 +1,13 @@
 import type { Project } from "@/types/project";
 
+export const dhwaniOutreach = "100+ outreach calls";
+export const upbotRegions = "15+ regions";
+
 export const projects: Project[] = [
   {
     slug: "dhwani",
     title: "Dhwani",
-    description:
-      "Voice AI that phone-screens blue-collar candidates in Hindi, English, and Hinglish. 100+ outreach calls, 20-30 customer interviews.",
+    description: `Voice AI that phone-screens blue-collar candidates in Hindi, English, and Hinglish. ${dhwaniOutreach}, 20-30 customer interviews.`,
     tech: ["Python", "Next.js", "TypeScript"],
     liveHref: "https://dhwanilabs.com/",
     githubHref: null,
@@ -14,8 +16,7 @@ export const projects: Project[] = [
   {
     slug: "upbot",
     title: "Upbot",
-    description:
-      "Uptime monitor running checks from 15+ regions on Cloudflare Workers, fed by a Redis Streams job queue.",
+    description: `Uptime monitor running checks from ${upbotRegions} on Cloudflare Workers, fed by a Redis Streams job queue.`,
     tech: ["Next.js", "Redis", "Cloudflare Workers"],
     liveHref: "https://www.upbot.space/",
     githubHref: "https://github.com/shaurya35/upbot",

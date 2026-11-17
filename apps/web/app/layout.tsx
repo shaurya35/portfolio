@@ -7,7 +7,7 @@ import { Beacon } from "@/components/beacon";
 import { VercelInsights } from "@/components/vercel-insights";
 import { ToastProvider } from "@/components/toast";
 import { UnsavedChangesProvider } from "@/lib/use-unsaved-changes";
-import { site, SITE_URL, SITE_DESCRIPTION, PERSON_ID } from "@/content/site";
+import { site, SITE_URL, SITE_DESCRIPTION, PERSON_ID, PORTRAIT_URL } from "@/content/site";
 import { llms } from "@/content/llms";
 import { socials } from "@/content/socials";
 import "./globals.css";
@@ -78,7 +78,7 @@ const personJsonLd = {
   // The llms.txt intro, with its markdown links reduced to their labels.
   description: llms.intro.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
   url: SITE_URL,
-  image: `${SITE_URL}/Self.jpeg`,
+  image: PORTRAIT_URL,
   email: `mailto:${site.email}`,
   address: {
     "@type": "PostalAddress",
